@@ -3,16 +3,14 @@
 App::App(std::string title, int width, int height, bool isFullScreen)
 {
     this->appWindow = open_window(title, width, height);
-    this->windowWidth = width; 
-    this->windowHeight = height;
-    this->quit = false;
-
     if(isFullScreen)
     {
         current_window_toggle_fullscreen();
-        this->windowWidth = current_window_width();
-        this->windowHeight = current_window_height();
     }
+
+    this->windowWidth = current_window_width();
+    this->windowHeight = current_window_height();
+    this->quit = false;
 }
 
 void App::run()

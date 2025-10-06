@@ -13,7 +13,7 @@ class App
         double windowWidth;
 
     public: 
-        App(std::string, int, int, bool);
+        App(std::string title="Truss Simulation", int width=640, int height=480, bool isFullScreen=false);
         void run();
         bool isQuit();
         window getWindow();

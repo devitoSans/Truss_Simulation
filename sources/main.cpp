@@ -1,12 +1,12 @@
-#include "app/setup/setup.hpp"
+#include "app/app.hpp"
 
 int main()
 {
-    Setup setup = Setup();
+    App app = App();
     
-    while(!setup.isQuit())
+    while(!app.isQuit())
     {
-        setup.run();
+        app.run();
     }
 
     return 0;
