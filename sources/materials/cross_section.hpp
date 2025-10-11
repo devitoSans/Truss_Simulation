@@ -5,8 +5,7 @@
 #include <stdexcept>
 #include <string>
 #include <splashkit.h>
-
-#define PI 3.14159265358979311600
+#include "../mathHelpers/mathHelpers.hpp"
 
 namespace cs_type
 {
@@ -19,7 +18,19 @@ namespace cs_type
 class CrossSection
 {
     public:
+        // required for deleting in polymorphism
+        virtual ~CrossSection() = default; 
+        CrossSection& operator=(const CrossSection&) = default;
+        CrossSection(const CrossSection&) = default;
+
+        CrossSection() = default;
+
+        virtual CrossSection* clone() const = 0;
+
         virtual double get_area() = 0;
+
+        // 
+        virtual double get_girth() const = 0;
 
         // Get I_minimum, that is Ixx if it is smaller than Iyy or vice versa.
         virtual double get_I() = 0;
@@ -96,9 +107,19 @@ class RectangleWithCircleCut : public CrossSection
             return true;
         }
 
+        RectangleWithCircleCut* clone() const override
+        {
+            return new RectangleWithCircleCut(*this);
+        }
+
         double get_area() override 
         {
             return this->width*this->height - PI * pow(this->get_circle_cut_diameter()/2, 2);
+        }
+
+        double get_girth() const override
+        {
+            return this->height;
         }
 
         double get_I() override 
