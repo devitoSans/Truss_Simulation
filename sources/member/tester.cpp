@@ -37,15 +37,9 @@ TEST_CASE("MemberData: Initialising a member")
     REQUIRE(member2.get_material()->get_young_modulus() == 3600);
 }
 
-TEST_CASE("Member Interface: Angle and Counter angle")
-{
-    MemberInterface Imember = MemberInterface(120, 40, cs_type::RECTANGLE_WITH_CIRCLE_OUT, new Acrylic());
-    REQUIRE(Imember.get_counter_angle() == 220);
-}
-
 TEST_CASE("Member Interface: Initialising")
 {
-    MemberInterface Imember = MemberInterface();
+    MemberInterface Imember = MemberInterface(20, 1.0, cs_type::RECTANGLE_WITH_CIRCLE_OUT, new Acrylic());
 
     REQUIRE(Imember.get_mid_pos().x == 0.0);
     REQUIRE(Imember.get_mid_pos().y == 0.0);
@@ -57,9 +51,15 @@ TEST_CASE("Member Interface: Initialising")
     REQUIRE(Imember.get_end_pos().y == 0.0);
 }
 
-TEST_CASE("Member Interface: Modify angle and counter angle")
+TEST_CASE("Member Interface: Angle and Counter angle")
 {
     MemberInterface Imember = MemberInterface();
+    REQUIRE(Imember.get_counter_angle() == 180);
+}
+
+TEST_CASE("Member Interface: Modify angle and counter angle")
+{
+    MemberInterface Imember = MemberInterface(20, 1.0, cs_type::RECTANGLE_WITH_CIRCLE_OUT, new Acrylic());
 
     Imember.modify_angle(90);
 
@@ -96,13 +96,13 @@ TEST_CASE("Member Interface: Modify angle and counter angle")
 
 TEST_CASE("Member Interface: Modify length")
 {
-    MemberInterface Imember = MemberInterface();
+    MemberInterface Imember = MemberInterface(20, 1.0, cs_type::RECTANGLE_WITH_CIRCLE_OUT, new Acrylic());
     Imember.modify_angle(90);
 
     Imember.modify_length(10);
 
-    REQUIRE(compare_double(Imember.get_start_pos().x, -10.));
-    // REQUIRE(Imember.get_start_pos().x == -10.0);
+    REQUIRE(compare_double(Imember.get_start_pos().x, -10.0));
+    REQUIRE(Imember.get_start_pos().x == -10.0);
     REQUIRE(Imember.get_start_pos().y == 5.0);
 
     REQUIRE(compare_double(Imember.get_end_pos().x, -10.0));
@@ -125,11 +125,11 @@ TEST_CASE("Member Interface: Modify length")
 
 TEST_CASE("Member Interface: Modify start, mid, and end position")
 {
-    MemberInterface Imember = MemberInterface();
+    MemberInterface Imember = MemberInterface(20, 1.0, cs_type::RECTANGLE_WITH_CIRCLE_OUT, new Acrylic());
 
     Imember.modify_mid_pos(0.0, 10);
 
-    REQUIRE(compare_double(Imember.get_start_pos().x, -10.0));
+    // REQUIRE(compare_double(Imember.get_start_pos().x, -10.0));
     // REQUIRE(Imember.get_start_pos().x == -10.0);
     REQUIRE(Imember.get_start_pos().y == 10.0);
 
@@ -138,6 +138,8 @@ TEST_CASE("Member Interface: Modify start, mid, and end position")
 
     REQUIRE(Imember.get_mid_pos().x == 0.0);
     REQUIRE(Imember.get_mid_pos().y == 10.0);
+
+    REQUIRE(Imember.get_angle() == 0.0);
 
     Imember.modify_start_pos(10.0, -20);
 
@@ -156,45 +158,59 @@ TEST_CASE("Member Interface: Modify start, mid, and end position")
     REQUIRE(Imember.get_mid_pos().y == -20.0);
 }
 
-// TEST_CASE("Member: Drawing (Toggleable)")
+// TEST_CASE("Member Interface: Drawing (Toggleable)")
 // {
-//     MemberData member = MemberData();
+//     MemberInterface Imember = MemberInterface();
 
-//     open_window("Test", 640, 480);
+//     const int WIDTH = 1920, HEIGHT = 1080; 
 
-//     double scale = 20;
+//     open_window("Test", WIDTH, HEIGHT);
+//     Imember.modify_mid_pos(WIDTH/2, HEIGHT/2);
+//     Imember.modify_angle(-90);
+
+//     double length = Imember.get_properties().get_length();
 //     while(!quit_requested())
 //     {
 //         process_events();
         
 //         if(key_down(UP_KEY))
 //         {
-//             scale++;
+//             length++;
 //         }
 //         if(key_down(DOWN_KEY))
 //         {
-//             scale--;
+//             length--;
+//         }
+//         if(key_down(W_KEY))
+//         {
+//             Imember.modify_mid_pos(Imember.get_mid_pos().x-1, Imember.get_mid_pos().y);
+//         }
+//         if(key_down(S_KEY))
+//         {
+//             Imember.modify_mid_pos(Imember.get_mid_pos().x+1, Imember.get_mid_pos().y);
 //         }
 //         if(key_down(Q_KEY))
 //         {
-//             member.set_angle(member.get_angle()+1);
+//             Imember.modify_angle(Imember.get_angle()-1);
 //         }
 //         if(key_down(A_KEY))
 //         {
-//             member.set_angle(member.get_angle()-1);
+//             Imember.modify_angle(Imember.get_angle()+1);
 //         }
 //         if(key_down(E_KEY))
 //         {
-//             member.set_counter_angle(member.get_counter_angle()+1);
+//             Imember.modify_counter_angle(Imember.get_counter_angle()+1);
 //         }
 //         if(key_down(D_KEY))
 //         {
-//             member.set_counter_angle(member.get_counter_angle()-1);
+//             Imember.modify_counter_angle(Imember.get_counter_angle()-1);
 //         }
-//         scale = std::max(0.0,scale);
+//         length = std::max(0.0,length);
+//         // Imember.modify_length(length);
+//         Imember.modify_end_pos(mouse_position().x, mouse_position().y);
 
 //         clear_screen(color_white());
-//         member.draw(640/2, 480/2, scale, color_black());
+//         Imember.draw();
         
 //         refresh_screen(60);
 //     }

@@ -9,11 +9,11 @@ class MemberInterface
         MemberData properties;
 
         // coordinates at the left of the member (if angle = 0)
-        vector_2d startPos = { 0.0, 0.0 };
+        vector_2d startPos;
         // coordinates at the right of the member (if angle = 0)
-        vector_2d endPos = { 0.0, 0.0 };
+        vector_2d endPos;
         // coordinates at the middle of the member
-        vector_2d midPos = { 0.0, 0.0 };
+        vector_2d midPos;
 
         // angle at the start of the member (if angle = 0)
         double angle; // degree
@@ -22,6 +22,8 @@ class MemberInterface
 
         // How big the 1mm is on the screen
         double scale;
+
+        double scaledLength;
 
         void set_angle(double newAngle)
         {
@@ -48,16 +50,19 @@ class MemberInterface
 
     public:
         MemberInterface(double length=20,
-                        double angle=0,
+                        double scale=20,
                         cs_type::cross_section_type type=cs_type::RECTANGLE_WITH_CIRCLE_OUT, 
-                        Materials* material=new Acrylic(),
-                        double scale=20)
+                        Materials* material=new Acrylic())
         {
             this->properties = MemberData(0, type, material);
             this->scale = scale;
 
+            this->startPos = { 0.0, 0.0 };
+            this->midPos = { 0.0, 0.0 };
+            this->endPos = { 0.0, 0.0 };;
+
             this->modify_length(length);
-            this->modify_angle(angle);
+            this->modify_angle(0);
         }
 
         double get_angle() const
@@ -93,9 +98,11 @@ class MemberInterface
         void modify_length(double newLength)
         {
             this->properties.set_length(newLength);
-            double oldLength = vector_magnitude(vector_subtract(this->startPos, this->endPos));
+            this->scaledLength = newLength * this->scale;
 
-            double deltaLength = newLength-oldLength;
+            double oldLength = vector_magnitude(vector_subtract(this->startPos, this->endPos));
+            double deltaLength = scaledLength-oldLength;
+
             vector_2d direction = vector_from_angle(this->angle, 1);
 
             // change start's position
@@ -115,7 +122,8 @@ class MemberInterface
             vector_2d distance = vector_subtract(this->startPos, this->endPos);
             
             this->set_counter_angle(vector_angle(distance)); 
-            this->properties.set_length(vector_magnitude(distance));
+            this->scaledLength = vector_magnitude(distance);
+            this->properties.set_length(this->scaledLength / this->scale);
         }
         
         void modify_end_pos(double x, double y)
@@ -126,7 +134,8 @@ class MemberInterface
             vector_2d distance = vector_subtract(this->endPos, this->startPos);
 
             this->set_angle(vector_angle(distance)); 
-            this->properties.set_length(vector_magnitude(distance));
+            this->scaledLength = vector_magnitude(distance);
+            this->properties.set_length(this->scaledLength / this->scale);
         }
 
         void modify_mid_pos(double x, double y)
@@ -163,9 +172,43 @@ class MemberInterface
             this->update_mid_pos();
         }
 
-        void draw()
+        void draw(color memberColor=color_black())
         {
+            double scaledGirth = this->properties.cross_section()->get_girth() * this->scale;
 
+            // Start's circle
+            draw_circle(memberColor, this->startPos.x, this->startPos.y, scaledGirth/2);
+            
+            // End's circle
+            draw_circle(memberColor, this->endPos.x, this->endPos.y, scaledGirth/2);
+
+            vector_2d line = vector_subtract(this->endPos, this->startPos);
+            vector_2d direction = { line.x/this->scaledLength, line.y/this->scaledLength };
+
+            // printf("start.x: %f, start.y: %f\n", this->startPos.x, this->startPos.y);
+            // printf("end.x: %f, end.y: %f\n", this->endPos.x, this->endPos.y);
+
+            // printf("line.x: %f, line.y: %f\n", line.x, line.y);
+            // printf("line: %f\n", vector_angle(line));
+
+            // printf("direction: %f\n", vector_angle(direction));
+
+            // -90 since the positive y screen is going down
+            vector_2d topDirection = matrix_multiply(rotation_matrix(-90), direction);
+            topDirection = { topDirection.x * scaledGirth/2, topDirection.y * scaledGirth/2 };
+
+            vector_2d botDirection = matrix_multiply(rotation_matrix(90), direction);
+            botDirection = { botDirection.x * scaledGirth/2, botDirection.y * scaledGirth/2 };
+
+            // Top's line
+            vector_2d topStart = vector_add(topDirection, this->startPos);
+            vector_2d topEnd = vector_add(topStart, line);
+            draw_line(memberColor, topStart.x, topStart.y, topEnd.x, topEnd.y);
+
+            // Bottom's line
+            vector_2d botStart = vector_add(botDirection, this->startPos);
+            vector_2d botEnd = vector_add(botStart, line);
+            draw_line(memberColor, botStart.x, botStart.y, botEnd.x, botEnd.y);
         }
 };
 

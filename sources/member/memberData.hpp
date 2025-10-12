@@ -39,11 +39,6 @@ class MemberData
         // Unless you know what are you doing.
         void set_length(double newLength);
 
-        // Join on the start
-        // Join on the end
-        // Remove itself on the start
-        // Remove utself on the end
-
         // Check Yield Strength
         // Check Buckling Strength
         // Axial force
