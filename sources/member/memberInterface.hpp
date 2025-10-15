@@ -41,6 +41,13 @@ class MemberInterface
             this->angle = std::fmod(180 + this->counter_angle, 360.0);
         }
 
+        bool set_scaled_length(double newLength)
+        {
+            bool status = this->properties.set_length(newLength);
+            this->scaledLength = this->properties.get_length() * this->scale;
+            return status;
+        }
+
         void update_mid_pos()
         {
             vector_2d middle = vector_subtract(this->endPos, this->startPos);
@@ -54,15 +61,15 @@ class MemberInterface
                         cs_type::cross_section_type type=cs_type::RECTANGLE_WITH_CIRCLE_OUT, 
                         Materials* material=new Acrylic())
         {
-            this->properties = MemberData(0, type, material);
+            this->properties = MemberData(length, type, material);
             this->scale = scale;
 
             this->startPos = { 0.0, 0.0 };
             this->midPos = { 0.0, 0.0 };
             this->endPos = { 0.0, 0.0 };;
 
+            this->set_angle(0);
             this->modify_length(length);
-            this->modify_angle(0);
         }
 
         double get_angle() const
@@ -95,13 +102,23 @@ class MemberInterface
             return this->properties;
         }
 
+        double get_scale() const
+        {
+            return this->scale;
+        }
+
+        void set_scale(double newScale)
+        {
+            this->scale = newScale;
+        }
+
+        // Modifying length that changes both start's and end's pos.
         void modify_length(double newLength)
         {
-            this->properties.set_length(newLength);
-            this->scaledLength = newLength * this->scale;
+            this->set_scaled_length(newLength);
 
             double oldLength = vector_magnitude(vector_subtract(this->startPos, this->endPos));
-            double deltaLength = scaledLength-oldLength;
+            double deltaLength = this->scaledLength-oldLength;
 
             vector_2d direction = vector_from_angle(this->angle, 1);
 
@@ -114,28 +131,56 @@ class MemberInterface
             this->endPos = vector_add(this->endPos, toStartDirection);
         }
 
+        // Modifying length that only changes end point. Start's position remains the same
+        void modify_length_on_start(double newLength)
+        {
+            this->set_scaled_length(newLength);
+            
+            double oldLength = vector_magnitude(vector_subtract(this->startPos, this->endPos));
+            double deltaLength = this->scaledLength-oldLength;
+            
+            vector_2d direction = vector_from_angle(this->angle, 1);
+            direction = { direction.x*deltaLength, direction.y*deltaLength };
+            this->endPos = vector_add(this->endPos, direction);
+        }
+        
+        // Modifying length that only changes start point. End's position remains the same
+        void modify_length_on_end(double newLength)
+        {
+            this->set_scaled_length(newLength);
+
+            double oldLength = vector_magnitude(vector_subtract(this->startPos, this->endPos));
+            double deltaLength = this->scaledLength-oldLength;
+
+            vector_2d direction = vector_from_angle(this->angle, 1);
+            direction = { -direction.x*deltaLength, -direction.y*deltaLength };
+            this->startPos = vector_add(this->startPos, direction);
+        }
+
         void modify_start_pos(double x, double y)
         {
-            this->startPos = vector_2d { x,y };
-            this->update_mid_pos();
-            
+            this->startPos = { x,y };
             vector_2d distance = vector_subtract(this->startPos, this->endPos);
-            
+
+            // change on the end side
             this->set_counter_angle(vector_angle(distance)); 
-            this->scaledLength = vector_magnitude(distance);
-            this->properties.set_length(this->scaledLength / this->scale);
+            this->set_scaled_length(vector_magnitude(distance) / this->scale);
+            this->modify_length_on_end(this->properties.get_length());
+
+            this->update_mid_pos();
         }
         
         void modify_end_pos(double x, double y)
         {
-            this->endPos = vector_2d { x,y };
-            this->update_mid_pos();
-
+            this->endPos = { x,y };
             vector_2d distance = vector_subtract(this->endPos, this->startPos);
-
+            
+            // change on the start side
             this->set_angle(vector_angle(distance)); 
-            this->scaledLength = vector_magnitude(distance);
-            this->properties.set_length(this->scaledLength / this->scale);
+            this->set_scaled_length(vector_magnitude(distance) / this->scale);
+            this->modify_length_on_start(this->properties.get_length());
+
+            this->update_mid_pos();
         }
 
         void modify_mid_pos(double x, double y)
@@ -170,6 +215,78 @@ class MemberInterface
 
             this->startPos = vector_add(newDirection, this->endPos);
             this->update_mid_pos();
+        }
+
+        // detect point on start
+        bool is_intersect_start(double x, double y)
+        {
+            point_2d point = { x,y };
+
+            double radius = this->properties.cross_section()->get_girth()/2;
+            circle startCircle = { this->startPos.x, this->startPos.y, radius };
+
+            return point_in_circle(point, startCircle);
+        }
+        
+        // detect point on end
+        bool is_intersect_end(double x, double y)
+        {
+            point_2d point = { x,y };
+
+            double radius = this->properties.cross_section()->get_girth()/2;
+            circle endCircle = { this->endPos.x, this->endPos.y, radius };
+
+            return point_in_circle(point, endCircle);
+        }
+        
+        // detect circle on start
+        bool is_intersect_start(double x, double y, double radius)
+        {
+            return circles_intersect(
+                x,y,
+                radius,
+
+                this->startPos.x,this->startPos.y,
+                this->properties.cross_section()->get_girth()/2
+            );
+        }
+        
+        // detect circle on end
+        bool is_intersect_end(double x, double y, double radius)
+        {
+            return circles_intersect(
+                x,y,
+                radius,
+
+                this->endPos.x,this->endPos.y,
+                this->properties.cross_section()->get_girth()/2
+            );
+        }
+
+        // Add intersection detection on body
+        bool is_intersect_body(double x, double y)
+        {
+            // TODO: might need to somehow rewrite this to speed it up. i.e. save this on some variables or something
+            double scaledGirth = this->properties.cross_section()->get_girth() * this->scale;
+            vector_2d line = vector_subtract(this->endPos, this->startPos);
+            vector_2d direction = { line.x/this->scaledLength, line.y/this->scaledLength };
+
+            vector_2d topDirection = matrix_multiply(rotation_matrix(-90), direction);
+            topDirection = { topDirection.x * scaledGirth/2, topDirection.y * scaledGirth/2 };
+
+            vector_2d left_corner_top = vector_add(topDirection, this->startPos);
+            vector_2d left_corner_bot = vector_add({-topDirection.x, -topDirection.y}, this->startPos);
+
+            vector_2d right_corner_top = vector_add(left_corner_top, line);
+            vector_2d right_corner_bot = vector_add(left_corner_bot, line);
+
+            quad q;
+            q.points[0] = {left_corner_top.x, left_corner_top.y};
+            q.points[1] = {right_corner_top.x, right_corner_top.y};
+            q.points[2] = {left_corner_bot.x, left_corner_bot.y};
+            q.points[3] = {right_corner_bot.x, right_corner_bot.y};
+
+            return point_in_quad({x,y}, q);
         }
 
         void draw(color memberColor=color_black())

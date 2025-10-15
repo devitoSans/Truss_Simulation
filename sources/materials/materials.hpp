@@ -1,6 +1,8 @@
 #ifndef __MATERIALS__
 #define __MATERIALS__
 
+// TODO: Might need to do something on this. Since this whole thing is a constant
+
 class Materials
 {
     public: // C++ default's scope is private
