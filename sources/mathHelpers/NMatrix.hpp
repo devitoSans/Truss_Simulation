@@ -37,7 +37,7 @@ class NMatrix
         NMatrix()
         {
             this->data = (double*)calloc(1*(2), sizeof(double));
-            this->size = size;
+            this->size = 1;
         }
 
         /**

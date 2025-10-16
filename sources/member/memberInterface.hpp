@@ -222,7 +222,8 @@ class MemberInterface
         {
             point_2d point = { x,y };
 
-            double radius = this->properties.cross_section()->get_girth()/2;
+            double scaledGirth = this->properties.cross_section()->get_girth() * this->scale;
+            double radius = scaledGirth/2;
             circle startCircle = { this->startPos.x, this->startPos.y, radius };
 
             return point_in_circle(point, startCircle);
@@ -233,7 +234,8 @@ class MemberInterface
         {
             point_2d point = { x,y };
 
-            double radius = this->properties.cross_section()->get_girth()/2;
+            double scaledGirth = this->properties.cross_section()->get_girth() * this->scale;
+            double radius = scaledGirth/2;
             circle endCircle = { this->endPos.x, this->endPos.y, radius };
 
             return point_in_circle(point, endCircle);
@@ -242,24 +244,26 @@ class MemberInterface
         // detect circle on start
         bool is_intersect_start(double x, double y, double radius)
         {
+            double scaledGirth = this->properties.cross_section()->get_girth() * this->scale;
             return circles_intersect(
                 x,y,
                 radius,
 
                 this->startPos.x,this->startPos.y,
-                this->properties.cross_section()->get_girth()/2
+                scaledGirth/2
             );
         }
         
         // detect circle on end
         bool is_intersect_end(double x, double y, double radius)
         {
+            double scaledGirth = this->properties.cross_section()->get_girth() * this->scale;
             return circles_intersect(
                 x,y,
                 radius,
 
                 this->endPos.x,this->endPos.y,
-                this->properties.cross_section()->get_girth()/2
+                scaledGirth/2
             );
         }
 
