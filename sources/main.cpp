@@ -3,10 +3,11 @@
 int main()
 {
     App app = App();
+    Simulation simulation = Simulation();
     
     while(!app.isQuit())
     {
-        app.run();
+        app.run(simulation);
     }
 
     return 0;

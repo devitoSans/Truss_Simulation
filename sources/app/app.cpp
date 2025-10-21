@@ -1,4 +1,5 @@
 #include "app.hpp"
+// #include "userInput.hpp"
 
 App::App(std::string title, int width, int height, bool isFullScreen)
 {
@@ -13,11 +14,20 @@ App::App(std::string title, int width, int height, bool isFullScreen)
     this->quit = false;
 }
 
-void App::run()
+void App::run(Simulation& simulation)
 {
     set_current_window(this->appWindow);
-    refresh_screen();
+
     process_events();
+
+    simulation.createMember();
+    simulation.update();
+
+    clear_screen(color_white());
+
+    simulation.drawAllMember();
+
+    refresh_screen(60);
 }
 
 bool App::isQuit()
