@@ -110,7 +110,7 @@ class MemberInterface
         void set_scale(double newScale)
         {
             this->scale = newScale;
-            this->set_scaled_length(this->scaledLength);
+            this->modify_length(this->properties.get_length());
         }
 
         // Modifying length that changes both start's and end's pos.
