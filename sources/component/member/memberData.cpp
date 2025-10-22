@@ -18,6 +18,9 @@ MemberData::MemberData(double length,
     this->material = material;
     this->id = (unsigned)mh_random(0, 2147483630);
     this->set_length(length);
+
+    this->jointIDAtStart = -1;
+    this->jointIDAtEnd = -1;
 }
 
 MemberData::MemberData(const MemberData& obj)
@@ -29,6 +32,9 @@ MemberData::MemberData(const MemberData& obj)
     this->material = obj.material->clone();
 
     this->axialForce = obj.axialForce;
+
+    this->jointIDAtStart = obj.jointIDAtStart;
+    this->jointIDAtEnd = obj.jointIDAtEnd;
 }
 
 MemberData& MemberData::operator=(MemberData obj)
@@ -52,8 +58,9 @@ void MemberData::swap(MemberData& obj1, MemberData& obj2)
     std::swap(obj1.material, obj2.material);
 
     std::swap(obj1.axialForce, obj2.axialForce);
-    // std::swap(obj1.start, obj2.start);
-    // std::swap(obj1.end, obj2.end);
+
+    std::swap(obj1.jointIDAtStart, obj2.jointIDAtStart);
+    std::swap(obj1.jointIDAtEnd, obj2.jointIDAtEnd);
 }
 
 unsigned int MemberData::get_id() const

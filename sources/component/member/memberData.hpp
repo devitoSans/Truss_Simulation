@@ -22,6 +22,9 @@ class MemberData
 
         double axialForce; // N (negative -> compression, positive -> tension)
 
+        int jointIDAtStart;
+        int jointIDAtEnd;
+
         // std::vector<MemberData*> start;
         // std::vector<MemberData*> end;
 
