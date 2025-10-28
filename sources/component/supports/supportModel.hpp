@@ -25,16 +25,26 @@ struct SupportData
 
 class SupportModel
 {
-    virtual int get_id() const = 0;
-    virtual SupportData& get_properties() = 0;
+    public:
+        SupportModel() = default;
+        virtual ~SupportModel() = default; 
+        SupportModel(const SupportModel&) = default;
+        SupportModel& operator=(const SupportModel&) = default;
+        virtual SupportModel* clone() const = 0;
 
-    virtual void move(double x, double y) = 0;
-    virtual void rotate(double degree) = 0;
+        virtual int get_id() const = 0;
+        virtual SupportData& get_properties() = 0;
+        virtual vector_2d get_mid_pos() const = 0;
 
-    virtual bool is_intersect(double x, double y) const = 0;
-    virtual bool is_intersect(double x, double y, double radius) const = 0;
+        virtual void set_scale(double newScale) = 0;
 
-    virtual void draw(color memberColor = color_black()) = 0;
+        virtual void move(double x, double y) = 0;
+        virtual void rotate(double degree) = 0;
+
+        virtual bool is_intersect(double x, double y) const = 0;
+        virtual bool is_intersect(double x, double y, double radius) const = 0;
+
+        virtual void draw(color memberColor = color_black()) = 0;
 };
 
 class PinBaseModel : public SupportModel
@@ -63,6 +73,8 @@ class PinBaseModel : public SupportModel
             this->feetPos = { 0.0, this->scaledHeight };
         }
 
+        virtual SupportModel* clone() const = 0;
+
         int get_id() const override
         {
             return this->id;
@@ -83,7 +95,7 @@ class PinBaseModel : public SupportModel
             return this->properties;
         }
 
-        vector_2d get_mid_pos() const
+        vector_2d get_mid_pos() const override
         {
             return this->midPos;
         }
@@ -104,6 +116,11 @@ class PinBaseModel : public SupportModel
             return vector_add(this->feetPos, secondDirection);
         }
 
+        void set_scale(double newScale) override
+        {
+
+        }
+
         void move(double x, double y) override
         {
             vector_2d direction = vector_subtract({x,y}, this->midPos);
@@ -113,11 +130,11 @@ class PinBaseModel : public SupportModel
 
         void rotate(double degree) override
         {
-            double angle = std::fmod(-degree, 360.0);
+            double angle = std::fmod(degree, 360.0);
             angle += (angle < 0.0 ? 360.0 : 0);
 
             vector_2d direction = vector_subtract(this->feetPos, this->midPos);
-            double currentAngle = vector_angle(direction)-90;
+            double currentAngle = vector_angle(direction);
             direction = matrix_multiply(rotation_matrix(angle - currentAngle), direction);
             this->feetPos = vector_add(this->midPos, direction);
         }
@@ -155,6 +172,11 @@ class PinJointModel : public PinBaseModel
     public:
         PinJointModel(double initScale=5.0) 
             : PinBaseModel(initScale, DEFAULT_PIN_GIRTH*1.1, DEFAULT_PIN_GIRTH, true, true) {}
+
+        SupportModel* clone() const override
+        {
+            return new PinJointModel(*this);
+        }
 };
 
 class Roller : public PinBaseModel
@@ -204,6 +226,11 @@ class Roller : public PinBaseModel
             this->update();
         }
 
+        SupportModel* clone() const override
+        {
+            return new Roller(*this);
+        }
+
         void move(double x, double y)
         {
             PinBaseModel::move(x,y);
@@ -214,6 +241,21 @@ class Roller : public PinBaseModel
         {
             PinBaseModel::rotate(degree);
             this->update();
+        }
+
+        bool is_intersect(double x, double y)
+        {
+            vector_2d direction = vector_subtract(this->feetPos, this->midPos);
+            direction = vector_from_angle(vector_angle(direction), this->scaledWheelRadius*2);
+
+            // quad q;
+            // q.points[0] = { this->get_left_pos().x, this->get_left_pos().y };
+            // q.points[1] = { this->get_right_pos().x, this->get_right_pos().y };
+            // q.points[2] = { this->get_left_pos().x+direction.x, this->get_left_pos().y+direction.y};
+            // q.points[3] = { this->get_right_pos().x+direction.x, this->get_right_pos().y+direction.y };
+
+            // return PinBaseModel::is_intersect(x,y) || point_in_quad({x,y},q);
+            return PinBaseModel::is_intersect(x,y);
         }
 
         void draw(color supportColor = color_black())

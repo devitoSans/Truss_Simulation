@@ -1,5 +1,6 @@
 #include <catch_amalgamated.hpp>
-#include "support.hpp"
+#include "supportModel.hpp"
+#include "supportController.hpp"
 
 using Catch::Approx;
 
@@ -254,4 +255,37 @@ void TEST3()
 TEST_CASE("Roller (Manual Testing): Move & Rotate  (Toggelable)")
 {
     // TEST3();
+}
+
+// TEST_CASE("Roller: Point intersection")
+// {
+//     Roller roller = Roller();
+
+//     REQUIRE(roller.is_intersect(0, 22) == true);
+// }
+
+void TEST4()
+{
+    MultiSupportController msc = MultiSupportController();
+
+    const int WIDTH = 640, HEIGHT = 480; 
+
+    open_window("Test", WIDTH, HEIGHT);
+
+    while(!quit_requested())
+    {
+        process_events();
+        msc.update();
+
+        clear_screen(color_white());
+
+        msc.draw();
+
+        refresh_screen(60);
+    }
+}
+
+TEST_CASE("MultiSupportController (Manual Testing): Controlling  (Toggelable)")
+{
+    TEST4();
 }
