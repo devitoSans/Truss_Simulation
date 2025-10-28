@@ -7,20 +7,7 @@
 #include "../componentControl.hpp"
 #include "../../action/action.hpp"
 
-// User input 
-inline bool DELETE_INPUT(int id)
-{
-    if(id == -1) 
-    {
-        return false;
-    }
-    return key_down(BACKSPACE_KEY);
-}
-
-inline bool CLEAR_FOCUS_INPUT()
-{
-    return mouse_down(LEFT_BUTTON);
-}
+// User input for member
 
 inline bool MEMBER_CREATE_INPUT() 
 { 
@@ -38,7 +25,7 @@ inline bool MEMBER_MOVE_CONDITION(const MemberModel& X)
 
 inline bool MEMBER_ROTATE_ON_START_INPUT()
 {
-    return ((mouse_down(LEFT_BUTTON) && key_down(LEFT_SHIFT_KEY)) || key_down(RIGHT_SHIFT_KEY));
+    return (mouse_down(LEFT_BUTTON) && (key_down(LEFT_SHIFT_KEY) || key_down(RIGHT_SHIFT_KEY)));
 }
 inline bool MEMBER_ROTATE_ON_START_CONDITION(const MemberModel& X)
 {
@@ -47,7 +34,7 @@ inline bool MEMBER_ROTATE_ON_START_CONDITION(const MemberModel& X)
 
 inline bool MEMBER_ROTATE_ON_END_INPUT()
 {
-    return ((mouse_down(LEFT_BUTTON) && key_down(LEFT_SHIFT_KEY)) || key_down(RIGHT_SHIFT_KEY));
+    return (mouse_down(LEFT_BUTTON) && (key_down(LEFT_SHIFT_KEY) || key_down(RIGHT_SHIFT_KEY)));
 }
 inline bool MEMBER_ROTATE_ON_END_CONDITION(const MemberModel& X)
 {
@@ -78,24 +65,13 @@ class MultiMemberController : ComponentControl
 {
     private:
         MultiMember members;
-        int focusedMemberID;
-        int memberInActionID;
-
-        // Set the focused member which is the last member in action.
-        void set_focused_member_id()
-        {
-            if(this->memberInActionID != -1)
-            {
-                this->focusedMemberID = this->memberInActionID;
-            }
-        }
 
         void create_member()
         {
             if(requestAction.click(MEMBER_CREATE_INPUT(), ActionType::MEMBER_CREATE, ActionType::MEMBER_CREATE))
             {
                 MemberModel tempModel = MemberModel(20, 5.0);
-                this->memberInActionID = tempModel.get_properties().get_id();
+                this->inActionID = tempModel.get_properties().get_id();
 
                 tempModel.modify_mid_pos(mouse_position().x, mouse_position().y);
                 this->members[tempModel.get_properties().get_id()] = tempModel;
@@ -104,11 +80,11 @@ class MultiMemberController : ComponentControl
 
         void delete_member()
         {
-            if(requestAction.click(DELETE_INPUT(this->focusedMemberID), ActionType::MEMBER_DELETE, ActionType::MEMBER_DELETE))
+            if(requestAction.click(DELETE_INPUT(this->focusedID), ActionType::MEMBER_DELETE, ActionType::MEMBER_DELETE))
             {
-                this->members.erase(this->focusedMemberID);
-                this->memberInActionID = -1;
-                this->focusedMemberID = -1;
+                this->members.erase(this->focusedID);
+                this->inActionID= -1;
+                this->focusedID = -1;
             }
         }
 
@@ -122,7 +98,7 @@ class MultiMemberController : ComponentControl
             {
                 return;
             }
-            this->memberInActionID = id;
+            this->inActionID = id;
 
             vector_2d mousePos = mouse_position_vector();
             static vector_2d diff = mousePos;
@@ -145,7 +121,7 @@ class MultiMemberController : ComponentControl
             {
                 return;
             }
-            this->memberInActionID = id;
+            this->inActionID = id;
             
             point_2d mousePos = mouse_position();
             vector_2d direction = vector_subtract({ mousePos.x, mousePos.y }, member.get_end_pos());
@@ -159,7 +135,7 @@ class MultiMemberController : ComponentControl
             {
                 return;
             }
-            this->memberInActionID = id;
+            this->inActionID = id;
             
             point_2d mousePos = mouse_position();
             vector_2d direction = vector_subtract({ mousePos.x, mousePos.y }, member.get_start_pos());
@@ -173,7 +149,7 @@ class MultiMemberController : ComponentControl
             {
                 return;
             }
-            this->memberInActionID = id;
+            this->inActionID = id;
 
             point_2d mousePos = mouse_position();
             member.modify_start_pos(mousePos.x, mousePos.y);
@@ -186,23 +162,15 @@ class MultiMemberController : ComponentControl
             {
                 return;
             }
-            this->memberInActionID = id;
+            this->inActionID = id;
 
             point_2d mousePos = mouse_position();
             member.modify_end_pos(mousePos.x, mousePos.y);
         }
 
-        void clear_focused_member()
-        {
-            if(requestAction.click(CLEAR_FOCUS_INPUT(), ActionType::NONE, -1))
-            {
-                this->focusedMemberID = -1;
-            }
-        }
-
     public:
         // ..
-        MultiMemberController() : members(), focusedMemberID(-1), memberInActionID(-1) {}
+        MultiMemberController() : members() {}
 
         MultiMember& get_members()
         {
@@ -223,21 +191,21 @@ class MultiMemberController : ComponentControl
         int update() override
         {
             // reset 
-            this->memberInActionID = -1;
+            this->inActionID = -1;
             this->create_member();
             this->delete_member();
 
             for(auto& [_, member] : this->members)
             {
-                if(this->focusedMemberID != -1)
+                if(this->focusedID != -1)
                 {
-                    this->rotate_start_member(this->members[this->focusedMemberID]);
-                    this->rotate_end_member(this->members[this->focusedMemberID]);
-                    this->move_start_member(this->members[this->focusedMemberID]);
-                    this->move_end_member(this->members[this->focusedMemberID]);
-                    this->move_member(this->members[this->focusedMemberID]);
+                    this->rotate_start_member(this->members[this->focusedID]);
+                    this->rotate_end_member(this->members[this->focusedID]);
+                    this->move_start_member(this->members[this->focusedID]);
+                    this->move_end_member(this->members[this->focusedID]);
+                    this->move_member(this->members[this->focusedID]);
                 }
-                if(this->focusedMemberID != this->memberInActionID || this->focusedMemberID == -1)
+                if(this->focusedID != this->inActionID || this->focusedID == -1)
                 {
                     this->rotate_start_member(member);
                     this->rotate_end_member(member);
@@ -249,7 +217,7 @@ class MultiMemberController : ComponentControl
 
             this->set_focused_member_id();
             this->clear_focused_member();
-            return this->focusedMemberID;
+            return this->focusedID;
         }
 
         // negative means it is connected to the start, while positive means there's connection at the end.
@@ -276,7 +244,7 @@ class MultiMemberController : ComponentControl
             {
                 member.set_scale(scale);
                 const int id = member.get_properties().get_id();
-                member.draw((this->focusedMemberID == id ? color_red() : color_black()));
+                member.draw((this->focusedID == id ? color_red() : color_black()));
             }
         }
 };

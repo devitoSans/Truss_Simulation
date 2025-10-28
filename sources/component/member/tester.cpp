@@ -329,5 +329,5 @@ void TEST2()
 
 TEST_CASE("MultiMemberController (Manual Testing): Controlling Members (Toggleable)")
 {
-    // TEST2();
+    TEST2();
 }
