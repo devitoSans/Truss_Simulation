@@ -17,6 +17,11 @@ namespace ActionType
         MEMBER_MOVE_ON_END,
 
         // Support
+        SUPPORT_PIN_CREATE,
+        SUPPORT_ROLLER_CREATE,
+        SUPPORT_DELETE,
+        SUPPORT_MOVE,
+        SUPPORT_ROTATE,
 
         //Force
     };
