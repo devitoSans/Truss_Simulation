@@ -15,4 +15,10 @@ inline long long mh_random(long long __mn__, long long __mx__)
     return std::uniform_int_distribution<long long>(__mn__, __mx__)(rng);
 }
 
+inline double mh_round_to(double a, double precision)
+{
+    return std::round(a * pow(10, precision)) / pow(10, precision);
+}
+
+
 #endif
