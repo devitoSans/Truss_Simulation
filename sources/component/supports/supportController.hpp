@@ -82,7 +82,7 @@ class MultiSupportController : ComponentControl
             // see member controller.
             bool firstTimeDrag = requestAction.is_in_action(-1, ActionType::NONE);
 
-            if(!requestAction.hold(SUPPORT_MOVE_INPUT(), ActionType::MEMBER_MOVE, support->get_id(), SUPPORT_TRANSFORM_CONDITION(support)))
+            if(!requestAction.hold(SUPPORT_MOVE_INPUT(), ActionType::SUPPORT_MOVE, support->get_id(), SUPPORT_TRANSFORM_CONDITION(support)))
             {
                 return;
             }
