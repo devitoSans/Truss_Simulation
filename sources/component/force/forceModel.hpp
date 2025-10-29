@@ -49,7 +49,7 @@ class ForceModel
             return vector_angle(this->baseShape.get_body_axis_offset(1,180));
         }
 
-        const vector_2d& get_mid_pos() const
+        vector_2d get_mid_pos() const
         {
             return this->baseShape.get_head_pos();
         }
@@ -60,11 +60,11 @@ class ForceModel
             return this->scaledPinGirth;
         }
 
-        vector_2d get_hit_box_pos() const
+        vector_2d get_arrow_point() const
         {
             return vector_add(
                 this->baseShape.get_head_pos(),
-                this->baseShape.get_body_axis_offset(this->get_scaled_pin_girth(), 180)
+                this->baseShape.get_body_axis_offset(this->get_scaled_pin_girth())
             );
         }
 
@@ -150,13 +150,13 @@ class ForceModel
             q.points[3] = { this->get_right_head_pos().x, this->get_right_head_pos().y };
 
             return point_in_quad({x,y}, q) || 
-                   point_in_circle(x,y, this->get_hit_box_pos().x,
-                                        this->get_hit_box_pos().y, 
+                   point_in_circle(x,y, this->baseShape.get_head_pos().x,
+                                        this->baseShape.get_head_pos().y, 
                                         this->get_scaled_pin_girth()) ||
                    point_in_triangle({x,y}, {
                     this->get_left_wing_pos().x, this->get_left_wing_pos().y,
                     this->get_right_wing_pos().x, this->get_right_wing_pos().y,
-                    this->baseShape.get_head_pos().x, this->baseShape.get_head_pos().y,
+                    this->get_arrow_point().x, this->get_arrow_point().y
                 });
         }
 
@@ -165,8 +165,8 @@ class ForceModel
             return circles_intersect(
                 circle {x,y,radius},
                 circle {
-                        this->get_hit_box_pos().x,
-                        this->get_hit_box_pos().y, 
+                        this->baseShape.get_head_pos().x,
+                        this->baseShape.get_head_pos().y, 
                         this->get_scaled_pin_girth()
                 }
             );
@@ -184,10 +184,10 @@ class ForceModel
             draw_triangle(forceColor,
                 this->get_left_wing_pos().x, this->get_left_wing_pos().y,
                 this->get_right_wing_pos().x, this->get_right_wing_pos().y,
-                this->baseShape.get_head_pos().x, this->baseShape.get_head_pos().y
+                this->get_arrow_point().x, this->get_arrow_point().y
             );
 
-            draw_circle(hitBoxColor, this->get_hit_box_pos().x, this->get_hit_box_pos().y, this->get_scaled_pin_girth());
+            draw_circle(hitBoxColor, this->baseShape.get_head_pos().x, this->baseShape.get_head_pos().y, this->get_scaled_pin_girth());
         }
 };
 
