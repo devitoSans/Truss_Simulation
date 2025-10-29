@@ -29,7 +29,7 @@ inline bool CLEAR_FOCUS_INPUT()
     return mouse_down(LEFT_BUTTON);
 }
 
-class ComponentControl
+class ComponentController
 {
     protected:
         int focusedID;
@@ -53,7 +53,7 @@ class ComponentControl
         }
 
     public:
-        ComponentControl() : focusedID(-1), inActionID(-1) {}
+        ComponentController() : focusedID(-1), inActionID(-1) {}
 
         virtual void draw(double scale=5.0) = 0;
         virtual std::vector<int> is_intersect(double x, double y, double radius) const = 0;

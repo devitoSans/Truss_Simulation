@@ -28,7 +28,7 @@ inline bool FORCE_TRANSFORM_CONDITION(const ForceModel& X)
 
 typedef std::map<int, ForceModel> MultiForce;
 
-class MultiForceController : ComponentControl
+class MultiForceController : public ComponentController
 {
     private:
         MultiForce forces;

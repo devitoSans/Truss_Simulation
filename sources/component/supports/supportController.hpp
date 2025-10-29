@@ -34,7 +34,7 @@ inline bool SUPPORT_TRANSFORM_CONDITION(const SupportModel* X)
 
 typedef std::map<int, SupportModel*> MultiSupport;
 
-class MultiSupportController : ComponentControl
+class MultiSupportController : public ComponentController
 {
     private:
         MultiSupport supports;

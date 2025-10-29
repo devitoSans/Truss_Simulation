@@ -61,7 +61,7 @@ inline bool MEMBER_MOVE_ON_END_CONDITION(const MemberModel& X)
 
 typedef std::map<int, MemberModel> MultiMember;
 
-class MultiMemberController : ComponentControl
+class MultiMemberController : public ComponentController
 {
     private:
         MultiMember members;
