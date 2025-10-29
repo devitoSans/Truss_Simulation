@@ -62,6 +62,15 @@ class OneSideShapeBase
             return this->feetPos;
         }
 
+        /// Returns a 2D vector of length `offset` along the head -> feet axis,
+        /// rotated by `degree`.
+        vector_2d get_body_axis_offset(double offset, double degree=0.0) const
+        {
+            vector_2d direction = vector_subtract(this->get_feet_pos(), this->get_head_pos());
+            double angle = vector_angle(direction);
+            return vector_from_angle(angle+degree, offset);
+        }
+
         void set_scale(double newScale)
         {
             double initLength = this->get_scaled_length() / this->scale;
