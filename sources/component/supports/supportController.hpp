@@ -102,6 +102,8 @@ class MultiSupportController : ComponentControl
 
         void rotate_support(SupportModel* support)
         {
+            bool firstTimeDrag = requestAction.is_in_action(-1, ActionType::NONE);
+
             if(!requestAction.hold(SUPPORT_ROTATE_INPUT(), 
                                    ActionType::SUPPORT_ROTATE, 
                                    support->get_id(), 
@@ -111,9 +113,19 @@ class MultiSupportController : ComponentControl
             }
             this->inActionID = support->get_id();
 
+            double angle = support->get_angle();
+            
             point_2d mousePos = mouse_position();
             vector_2d direction = vector_subtract({ mousePos.x, mousePos.y }, support->get_mid_pos());
-            support->rotate(vector_angle(direction));
+            double newAngle = vector_angle(direction);
+
+            static double diff = angle;
+            if(firstTimeDrag)
+            {
+                diff = newAngle - angle;
+            }
+
+            support->rotate(newAngle - diff);
         }
 
     public:

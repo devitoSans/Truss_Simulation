@@ -36,6 +36,7 @@ class SupportModel
         virtual int get_id() const = 0;
         virtual SupportData& get_properties() = 0;
         virtual vector_2d get_mid_pos() const = 0;
+        virtual double get_angle() const = 0;
 
         virtual void set_scale(double newScale) = 0;
 
@@ -78,6 +79,12 @@ class PinBaseModel : public SupportModel
         double get_scaled_girth() const
         {
             return this->baseShape.get_scaled_width();
+        }
+
+        double get_angle() const override
+        {
+            vector_2d dir = this->baseShape.get_body_axis_offset(1);
+            return vector_angle(dir);
         }
 
         SupportData& get_properties()
