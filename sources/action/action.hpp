@@ -24,6 +24,10 @@ namespace ActionType
         SUPPORT_ROTATE,
 
         //Force
+        FORCE_CREATE,
+        FORCE_DELETE,
+        FORCE_MOVE,
+        FORCE_ROTATE
     };
 }
 

@@ -42,6 +42,11 @@ class OneSideShapeBase
             this->update_feet_pos(direction);
         }
 
+        double get_scale() const
+        {
+            return this->scale;
+        }
+
         double get_scaled_length() const
         {
             return this->scaledLength;
