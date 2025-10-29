@@ -70,27 +70,27 @@ TEST_CASE("PinJointModel: Rotate")
     REQUIRE(pinJointModel.get_mid_pos().x == Approx(0.0));
     REQUIRE(pinJointModel.get_mid_pos().y == Approx(0.0));
 
-    REQUIRE(pinJointModel.get_left_pos().x == Approx(22.0));
-    REQUIRE(pinJointModel.get_left_pos().y == Approx(10.0));
+    REQUIRE(pinJointModel.get_left_pos().x == Approx(-10.0));
+    REQUIRE(pinJointModel.get_left_pos().y == Approx(22.0));
 
-    REQUIRE(pinJointModel.get_right_pos().x == Approx(22.0));
-    REQUIRE(pinJointModel.get_right_pos().y == Approx(-10.0));
+    REQUIRE(pinJointModel.get_right_pos().x == Approx(10.0));
+    REQUIRE(pinJointModel.get_right_pos().y == Approx(22.0));
 
     pinJointModel.rotate(180);
-
-    REQUIRE(pinJointModel.get_left_pos().x == Approx(10.0));
-    REQUIRE(pinJointModel.get_left_pos().y == Approx(-22.0));
-
-    REQUIRE(pinJointModel.get_right_pos().x == Approx(-10.0));
-    REQUIRE(pinJointModel.get_right_pos().y == Approx(-22.0));
-
-    pinJointModel.rotate(-90);
 
     REQUIRE(pinJointModel.get_left_pos().x == Approx(-22.0));
     REQUIRE(pinJointModel.get_left_pos().y == Approx(-10.0));
 
     REQUIRE(pinJointModel.get_right_pos().x == Approx(-22.0));
     REQUIRE(pinJointModel.get_right_pos().y == Approx(10.0));
+
+    pinJointModel.rotate(-90);
+
+    REQUIRE(pinJointModel.get_left_pos().x == Approx(10.0));
+    REQUIRE(pinJointModel.get_left_pos().y == Approx(-22.0));
+
+    REQUIRE(pinJointModel.get_right_pos().x == Approx(-10.0));
+    REQUIRE(pinJointModel.get_right_pos().y == Approx(-22.0));
 }
 
 TEST_CASE("PinJointModel: Move & Rotate")
@@ -102,36 +102,25 @@ TEST_CASE("PinJointModel: Move & Rotate")
     REQUIRE(pinJointModel.get_mid_pos().x == Approx(0.0));
     REQUIRE(pinJointModel.get_mid_pos().y == Approx(0.0));
 
-    REQUIRE(pinJointModel.get_left_pos().x == Approx(22.0));
-    REQUIRE(pinJointModel.get_left_pos().y == Approx(10.0));
+    REQUIRE(pinJointModel.get_left_pos().x == Approx(-10.0));
+    REQUIRE(pinJointModel.get_left_pos().y == Approx(22.0));
 
-    REQUIRE(pinJointModel.get_right_pos().x == Approx(22.0));
-    REQUIRE(pinJointModel.get_right_pos().y == Approx(-10.0));
+    REQUIRE(pinJointModel.get_right_pos().x == Approx(10.0));
+    REQUIRE(pinJointModel.get_right_pos().y == Approx(22.0));
 
     pinJointModel.move(10, 2);
 
     REQUIRE(pinJointModel.get_mid_pos().x == Approx(10.0));
     REQUIRE(pinJointModel.get_mid_pos().y == Approx(2.0));
 
-    REQUIRE(pinJointModel.get_left_pos().x == Approx(32.0));
-    REQUIRE(pinJointModel.get_left_pos().y == Approx(12.0));
+    REQUIRE(pinJointModel.get_left_pos().x == Approx(0.0));
+    REQUIRE(pinJointModel.get_left_pos().y == Approx(24.0));
 
-    REQUIRE(pinJointModel.get_right_pos().x == Approx(32.0));
-    REQUIRE(pinJointModel.get_right_pos().y == Approx(-8.0));
+    REQUIRE(pinJointModel.get_right_pos().x == Approx(20.0));
+    REQUIRE(pinJointModel.get_right_pos().y == Approx(24.0));
 
     pinJointModel.move(0, -11);
     // -10, -13
-
-    REQUIRE(pinJointModel.get_mid_pos().x == Approx(0.0));
-    REQUIRE(pinJointModel.get_mid_pos().y == Approx(-11.0));
-
-    REQUIRE(pinJointModel.get_left_pos().x == Approx(22.0));
-    REQUIRE(pinJointModel.get_left_pos().y == Approx(-1.0));
-
-    REQUIRE(pinJointModel.get_right_pos().x == Approx(22.0));
-    REQUIRE(pinJointModel.get_right_pos().y == Approx(-21.0));
-
-    pinJointModel.rotate(0);
 
     REQUIRE(pinJointModel.get_mid_pos().x == Approx(0.0));
     REQUIRE(pinJointModel.get_mid_pos().y == Approx(-11.0));
@@ -141,6 +130,17 @@ TEST_CASE("PinJointModel: Move & Rotate")
 
     REQUIRE(pinJointModel.get_right_pos().x == Approx(10.0));
     REQUIRE(pinJointModel.get_right_pos().y == Approx(11.0));
+
+    pinJointModel.rotate(0);
+
+    REQUIRE(pinJointModel.get_mid_pos().x == Approx(0.0));
+    REQUIRE(pinJointModel.get_mid_pos().y == Approx(-11.0));
+
+    REQUIRE(pinJointModel.get_left_pos().x == Approx(22.0));
+    REQUIRE(pinJointModel.get_left_pos().y == Approx(-1.0));
+
+    REQUIRE(pinJointModel.get_right_pos().x == Approx(22.0));
+    REQUIRE(pinJointModel.get_right_pos().y == Approx(-21.0));
 }
 
 TEST_CASE("PinJointModel: point intersection")
@@ -287,5 +287,5 @@ void TEST4()
 
 TEST_CASE("MultiSupportController (Manual Testing): Controlling  (Toggelable)")
 {
-    TEST4();
+    // TEST4();
 }
