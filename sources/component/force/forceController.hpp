@@ -120,28 +120,31 @@ class MultiForceController : public ComponentController
             return (this->forces.find(id) == this->forces.end() ? ComponentType::NONE : this->get_type());
         }
 
-        int update() override
+        int update(bool canUpdate) override
         {
             this->inActionID = -1;
             this->create_force();
             this->delete_force();
 
-            for(auto& [_, force] : this->forces)
+            if(canUpdate)
             {
-                if(this->focusedID != -1)
+                for(auto& [_, force] : this->forces)
                 {
-                    this->rotate_force(this->forces[this->focusedID]);
-                    this->move_force(this->forces[this->focusedID]);
-                }
-                if(this->focusedID != this->inActionID || this->focusedID == -1)
-                {
-                    this->rotate_force(force);
-                    this->move_force(force);
+                    if(this->focusedID != -1)
+                    {
+                        this->rotate_force(this->forces[this->focusedID]);
+                        this->move_force(this->forces[this->focusedID]);
+                    }
+                    if(this->focusedID != this->inActionID || this->focusedID == -1)
+                    {
+                        this->rotate_force(force);
+                        this->move_force(force);
+                    }
                 }
             }
 
-            this->set_focused_member_id();
-            this->clear_focused_member();
+            this->set_focused_member_id(ComponentType::FORCE);
+            this->clear_focused_member(ComponentType::FORCE);
             return this->focusedID;
         }
 

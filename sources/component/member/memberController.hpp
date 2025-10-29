@@ -188,35 +188,38 @@ class MultiMemberController : public ComponentController
         }
 
         // return which member's id that is currently in focus (or selected)
-        int update() override
+        int update(bool canUpdate) override
         {
             // reset 
             this->inActionID = -1;
             this->create_member();
             this->delete_member();
 
-            for(auto& [_, member] : this->members)
+            if(canUpdate)
             {
-                if(this->focusedID != -1)
+                for(auto& [_, member] : this->members)
                 {
-                    this->rotate_start_member(this->members[this->focusedID]);
-                    this->rotate_end_member(this->members[this->focusedID]);
-                    this->move_start_member(this->members[this->focusedID]);
-                    this->move_end_member(this->members[this->focusedID]);
-                    this->move_member(this->members[this->focusedID]);
-                }
-                if(this->focusedID != this->inActionID || this->focusedID == -1)
-                {
-                    this->rotate_start_member(member);
-                    this->rotate_end_member(member);
-                    this->move_start_member(member);
-                    this->move_end_member(member);
-                    this->move_member(member);
+                    if(this->focusedID != -1)
+                    {
+                        this->rotate_start_member(this->members[this->focusedID]);
+                        this->rotate_end_member(this->members[this->focusedID]);
+                        this->move_start_member(this->members[this->focusedID]);
+                        this->move_end_member(this->members[this->focusedID]);
+                        this->move_member(this->members[this->focusedID]);
+                    }
+                    if(this->focusedID != this->inActionID || this->focusedID == -1)
+                    {
+                        this->rotate_start_member(member);
+                        this->rotate_end_member(member);
+                        this->move_start_member(member);
+                        this->move_end_member(member);
+                        this->move_member(member);
+                    }
                 }
             }
 
-            this->set_focused_member_id();
-            this->clear_focused_member();
+            this->set_focused_member_id(ComponentType::MEMBER);
+            this->clear_focused_member(ComponentType::MEMBER);
             return this->focusedID;
         }
 

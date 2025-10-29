@@ -165,29 +165,32 @@ class MultiSupportController : public ComponentController
             return (this->supports.find(id) == this->supports.end() ? ComponentType::NONE : this->get_type());
         }
 
-        int update() override
+        int update(bool canUpdate) override
         {
             this->inActionID = -1;
             this->create_pin();
             this->create_roller();
             this->delete_support();
 
-            for(auto& [_, support] : this->supports)
+            if(canUpdate)
             {
-                if(this->focusedID != -1)
+                for(auto& [_, support] : this->supports)
                 {
-                    this->rotate_support(this->supports[this->focusedID]);
-                    this->move_support(this->supports[this->focusedID]);
-                }
-                if(this->focusedID != this->inActionID || this->focusedID == -1)
-                {
-                    this->rotate_support(support);
-                    this->move_support(support);
+                    if(this->focusedID != -1)
+                    {
+                        this->rotate_support(this->supports[this->focusedID]);
+                        this->move_support(this->supports[this->focusedID]);
+                    }
+                    if(this->focusedID != this->inActionID || this->focusedID == -1)
+                    {
+                        this->rotate_support(support);
+                        this->move_support(support);
+                    }
                 }
             }
 
-            this->set_focused_member_id();
-            this->clear_focused_member();
+            this->set_focused_member_id(ComponentType::SUPPORT);
+            this->clear_focused_member(ComponentType::SUPPORT);
             return this->focusedID;
         }
 

@@ -13,7 +13,10 @@ namespace ComponentType
         SUPPORT,
         FORCE
     };
+
+    inline ComponentType focusedComponent = NONE;
 }
+
 
 // General user input 
 inline bool DELETE_INPUT(int id)
@@ -36,17 +39,18 @@ class ComponentController
         int inActionID;
 
         // Set the focused member which is the last member in action.
-        void set_focused_member_id()
+        void set_focused_member_id(ComponentType::ComponentType type)
         {
             if(this->inActionID != -1)
             {
                 this->focusedID = this->inActionID;
+                ComponentType::focusedComponent = type;
             }
         }
 
-        void clear_focused_member()
+        void clear_focused_member(ComponentType::ComponentType type)
         {
-            if(requestAction.click(CLEAR_FOCUS_INPUT(), ActionType::NONE, -1))
+            if(requestAction.click(CLEAR_FOCUS_INPUT(), ActionType::NONE, -1) || ComponentType::focusedComponent != type)
             {
                 this->focusedID = -1;
             }
@@ -59,7 +63,7 @@ class ComponentController
         virtual std::vector<int> is_intersect(double x, double y, double radius) const = 0;
         virtual ComponentType::ComponentType get_type() const = 0;
         virtual ComponentType::ComponentType get_type(int id) const = 0;
-        virtual int update() = 0;
+        virtual int update(bool canUpdate) = 0;
 };
 
 #endif

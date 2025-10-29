@@ -1,151 +1,85 @@
 #ifndef __SIMULATION__
 #define __SIMULATION__
 
-#include <map>
-#include "../component/component.hpp"
-#include "../inputHandler/inputHandler.hpp"
+#include <vector>
+#include "../component/componentControl.hpp"
+#include "../component/member/memberController.hpp"
+#include "../component/supports/supportController.hpp"
+#include "../component/force/forceController.hpp"
+
+const int NUM_COMPONENT_TYPE = 3;
 
 class Simulation
 {
     private:
-        std::map<int, cmp::component> components;
-        std::map<int, std::vector<int>> joints;
-        bool isPerformingAction;
+        double scale;
+        ComponentController* components[3] = {
+            new MultiMemberController(),
+            new MultiSupportController(),
+            new MultiForceController()
+        };
 
     public:
-        Simulation()
+        Simulation(double scale)
         {
-            this->isPerformingAction = false;
-        }
-
-        void createMember()
-        {
-            if(create_member_condition())
-            {
-                cmp::component comp = cmp::convert(MemberInterface());
-                cmp::member(comp)->set_scale(5);
-                cmp::member(comp)->modify_mid_pos(mouse_position().x, mouse_position().y);
-                this->components[comp.id] = comp;
-            }
+            this->scale = scale;
         }
 
         void update()
         {
-            this->isPerformingAction = this->is_component_performing_action();
-
-            for(auto& [_, comp] : this->components)
+            static int focusedID = -1;
+            for(int i = 0; i < NUM_COMPONENT_TYPE; i++)
             {
-                // Member
-                this->rotate_start_member(comp);
-                this->rotate_end_member(comp);
-                this->change_start_member(comp);
-                this->change_end_member(comp);
-                this->move_member(comp);
-            }
-        }
-
-        bool is_component_performing_action()
-        {
-            bool performedAction = false;
-            for(auto& [_, comp] : this->components)
-            {
-                if(comp.status != cmp::NONE)
+                if(this->components[i]->get_type(focusedID) != ComponentType::NONE || focusedID == -1)
                 {
-                    performedAction = true;
-                    break;
+                    focusedID = this->components[i]->update(true);
+                }
+                else
+                {
+                    int temp = this->components[i]->update(false);
+                    focusedID = (temp == -1 ? focusedID : temp);
                 }
             }
-            return performedAction;
         }
 
-        bool action_condition(cmp::component& comp, cmp::componentStatus status, bool (*userConditions)(cmp::component&))
+        void IO()
         {
-            if(!(comp.status == status || !this->isPerformingAction))
-            {
-                return false;
-            }
-            if(userConditions(comp))
-            {
-                this->isPerformingAction = true;
-                return true;
-            }
-            return false;
+            // if((key_down(LEFT_CTRL_KEY) || key_down(RIGHT_CTRL_KEY)) && key_down(EQUALS_KEY)) // plus key
+            // {
+            //     this->scale++;
+            // }
+            // else if((key_down(LEFT_CTRL_KEY) || key_down(RIGHT_CTRL_KEY)) && key_down(MINUS_KEY))
+            // {
+            //     this->scale--;
+            // }
+            // this->scale = std::max(this->scale, 1.0);
+
+            // double speed = 2;
+            // if(key_down(UP_KEY))
+            // {
+            //     this->components.move_all_components_by(0, speed);
+            // }
+            // if(key_down(RIGHT_KEY))
+            // {
+            //     this->components.move_all_components_by(-speed, 0);
+                
+            // }
+            // if(key_down(LEFT_KEY))
+            // {
+            //     this->components.move_all_components_by(speed, 0);
+                
+            // }
+            // if(key_down(DOWN_KEY))
+            // {
+            //     this->components.move_all_components_by(0, -speed);
+            // }
         }
 
-        void move_member(cmp::component& comp)
+        void draw()
         {
-            bool firstTime = !this->isPerformingAction;
-
-            if(!action_condition(comp, cmp::MEMBER_MOVE, move_member_condition))
+            for(int i = 0; i < NUM_COMPONENT_TYPE; i++)
             {
-                return;
-            }
-
-            vector_2d mousePos = mouse_position_vector();
-            static vector_2d diff = mousePos;
-            
-            if(firstTime)
-            {
-                diff = vector_subtract(cmp::member(comp)->get_mid_pos(), mousePos);
-            }
-
-            vector_2d change = vector_add(diff, mousePos);
-            cmp::member(comp)->modify_mid_pos(change.x, change.y);
-        }
-        
-        void rotate_start_member(cmp::component& comp)
-        {
-            if(!action_condition(comp, cmp::MEMBER_ROTATE_START, rotate_start_member_condition))
-            {
-                return;
-            }
-            
-            point_2d mousePos = mouse_position();
-            vector_2d direction = vector_subtract({ mousePos.x, mousePos.y }, cmp::member(comp)->get_end_pos());
-            cmp::member(comp)->modify_counter_angle(vector_angle(direction));
-        }
-
-        void rotate_end_member(cmp::component& comp)
-        {
-            if(!action_condition(comp, cmp::MEMBER_ROTATE_END, rotate_end_member_condition))
-            {
-                return;
-            }
-            
-            point_2d mousePos = mouse_position();
-            vector_2d direction = vector_subtract({ mousePos.x, mousePos.y }, cmp::member(comp)->get_start_pos());
-            cmp::member(comp)->modify_angle(vector_angle(direction));
-        }
-
-        void change_start_member(cmp::component& comp)
-        {
-            if(!action_condition(comp, cmp::MEMBER_CHANGE_START, change_start_member_condition))
-            {
-                return;
-            }
-
-            point_2d mousePos = mouse_position();
-            MemberInterface* member = cmp::member(comp);
-            member->modify_start_pos(mousePos.x, mousePos.y);
-        }
-        
-        void change_end_member(cmp::component& comp)
-        {
-            if(!action_condition(comp, cmp::MEMBER_CHANGE_END, change_end_member_condition))
-            {
-                return;
-            }
-
-            point_2d mousePos = mouse_position();
-            MemberInterface* member = cmp::member(comp);
-            member->modify_end_pos(mousePos.x, mousePos.y);
-        }
-
-        void drawAllMember()
-        {
-            for(auto& [_, comp] : this->components)
-            {
-                cmp::member(comp)->draw();
+                this->components[i]->draw(this->scale);
             }
         }
 };
