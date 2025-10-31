@@ -199,12 +199,14 @@ class MultiForceController : public ComponentController
 
         void draw(double scale=5.0) override
         {
-            for(auto& [_, force] : this->forces)
+            for (auto it = this->forces.rbegin(); it != this->forces.rend(); it++) 
             {
+                auto& force = it->second;
                 force.set_scale(scale);
                 force.draw((this->focusedID == force.get_id() ? color_red() : color_black()),
                             this->focusedID == force.get_id() ? color_dark_red() : color_dark_gray());
-            }
+            
+                        }
         }
 };
 

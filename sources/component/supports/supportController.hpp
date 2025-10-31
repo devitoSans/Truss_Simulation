@@ -258,8 +258,9 @@ class MultiSupportController : public ComponentController
 
         void draw(double scale=5.0) override
         {
-            for(auto& [_, support] : this->supports)
+            for (auto it = this->supports.rbegin(); it != this->supports.rend(); it++) 
             {
+                auto& support = it->second;
                 support->set_scale(scale);
                 support->draw((this->focusedID == support->get_id() ? color_red() : color_black()));
             }

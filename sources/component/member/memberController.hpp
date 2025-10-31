@@ -291,8 +291,9 @@ class MultiMemberController : public ComponentController
         
         void draw(double scale=5.0) override
         {
-            for(auto& [_, member] : this->members)
+            for (auto it = this->members.rbegin(); it != this->members.rend(); it++) 
             {
+                auto& member = it->second;
                 member.set_scale(scale);
                 const int id = member.get_properties().get_id();
                 member.draw((this->focusedID == id ? color_red() : color_black()));
