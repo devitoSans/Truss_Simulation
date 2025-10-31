@@ -209,11 +209,17 @@ MemberModel::MemberModel(double length, double scale, cs_type::cross_section_typ
     this->modify_length(length);
 }
 
+// In a screen orientation, up is negative and down is positive.
+// So 90 degree vector will points down. To convert it to "normal" orientation,
+// simply negate it with negative, aka. multiplied by -1.
 double MemberModel::get_angle() const
 {
     return this->angle;
 }
 
+// In a screen orientation, up is negative and down is positive.
+// So 90 degree vector will points down. To convert it to "normal" orientation,
+// simply negate it with negative, aka. multiplied by -1.
 double MemberModel::get_counter_angle() const
 {
     return this->counter_angle;

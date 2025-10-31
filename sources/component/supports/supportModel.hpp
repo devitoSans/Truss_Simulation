@@ -83,10 +83,15 @@ class PinBaseModel : public SupportModel
             return this->baseShape.get_scaled_width();
         }
 
+        // Get the angle of its body orientation, which is head (the circle pin) to feet (the base of a support)
+        // 
+        // The returned angle will be in a screen orientation: up is negative and down is positive.
+        // So 90 degree vector will points down. To convert it to "normal" orientation,
+        // simply negate it with negative, aka. multiplied by -1.
         double get_angle() const override
         {
             vector_2d dir = this->baseShape.get_body_axis_offset(1);
-            return vector_angle(dir);
+            return ANGLE(vector_angle(dir));
         }
 
         const SupportData& read_properties() const override

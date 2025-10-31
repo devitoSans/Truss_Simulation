@@ -45,9 +45,14 @@ class ForceModel
             return this->force;
         }
 
+        // Get the angle of the force it is acting to (feet, the base, to head--pointy part)
+        //
+        // In a screen orientation, up is negative and down is positive.
+        // So 90 degree vector will points down. To convert it to "normal" orientation,
+        // simply negate it with negative, aka. multiplied by -1.
         double get_angle() const
         {
-            return vector_angle(this->baseShape.get_body_axis_offset(1,180));
+            return ANGLE(vector_angle(this->baseShape.get_body_axis_offset(1,180)));
         }
 
         vector_2d get_mid_pos() const
