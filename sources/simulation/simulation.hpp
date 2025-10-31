@@ -6,6 +6,9 @@
 #include "../component/member/memberController.hpp"
 #include "../component/supports/supportController.hpp"
 #include "../component/force/forceController.hpp"
+#include "../joints/connectionManager.hpp"
+#include "../action/action.hpp"
+#include <cassert>
 
 const int NUM_COMPONENT_TYPE = 3;
 
@@ -13,33 +16,52 @@ class Simulation
 {
     private:
         double scale;
-        ComponentController* components[3] = {
+        // TODO: free this up
+        ComponentController* components[NUM_COMPONENT_TYPE] = {
             new MultiMemberController(),
             new MultiSupportController(),
             new MultiForceController()
         };
 
+        int focusedID;
+        int prevInActionID;
+
+        ConnectionManager connectionManager;
+
     public:
-        Simulation(double scale)
+        Simulation(double scale) : connectionManager(), focusedID(-1), prevInActionID(-1)
         {
             this->scale = scale;
         }
 
         void update()
         {
-            static int focusedID = -1;
             for(int i = 0; i < NUM_COMPONENT_TYPE; i++)
             {
-                if(this->components[i]->get_type(focusedID) != ComponentType::NONE || focusedID == -1)
+                if(this->components[i]->get_type(this->focusedID) != ComponentType::NONE || this->focusedID == -1)
                 {
-                    focusedID = this->components[i]->update(true);
+                    this->focusedID = this->components[i]->update(true);
                 }
                 else
                 {
                     int temp = this->components[i]->update(false);
-                    focusedID = (temp == -1 ? focusedID : temp);
+                    this->focusedID = (temp == -1 ? this->focusedID : temp);
                 }
             }
+            if(this->focusedID != -1)
+            {
+                this->prevInActionID = this->focusedID;
+            }
+            this->connectionManager.update(this->components, NUM_COMPONENT_TYPE, this->prevInActionID);
+            if(requestAction.click(key_down(KEYPAD_ENTER), (ActionType::ActionType)-1234, -1234))
+            {
+                this->calculate();
+            }
+        }
+
+        void calculate()
+        {
+            
         }
 
         void IO()
