@@ -17,7 +17,7 @@ class NMatrix
 
         void validating_range(int row, int col)
         {
-            if(row < 0 || row >= this->size || col < 0 || col >= this->size+1)
+            if(row < 0 || row >= (int)this->size || col < 0 || col >= (int)this->size+1)
             {
                 throw std::out_of_range("index (" + std::to_string(row) + ", " + std::to_string(col) + 
                                                ") is out of the range. valid range: 0-" + std::to_string(this->size-1));
@@ -48,7 +48,7 @@ class NMatrix
             this->data = (double*)calloc(size*(size+1), sizeof(double));
             this->size = size;
         }
-        NMatrix(std::vector<std::vector<double>> matrix)
+        NMatrix(std::vector<std::vector<double>>&& matrix)
         {
             this->data = (double*)calloc(matrix.size()*(matrix.size()+1), sizeof(double));
             this->size = matrix.size();
@@ -90,12 +90,12 @@ class NMatrix
             this->set(row, this->size, value);
         }
 
-        size_t get_row_size()
+        int get_row_size()
         {
-            return this->size;
+            return (int)this->size;
         }
         
-        size_t get_col_size()
+        int get_col_size()
         {
             return this->get_row_size()+1;
         }
@@ -106,7 +106,7 @@ class NMatrix
             {
                 return;
             }
-            for(int i = 0; i < matrix.size(); i++)
+            for(int i = 0; i < (int)matrix.size(); i++)
             {
                 if(matrix[i].size() != matrix.size()+1)
                 {

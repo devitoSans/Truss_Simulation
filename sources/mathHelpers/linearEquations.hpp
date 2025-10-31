@@ -141,7 +141,7 @@ void __back_substitution(NMatrix& nmatrix, std::vector<double>& roots)
 // Solve using gauss algorithm, forward elimination and backward subsitution.
 bool solve_linear_equations(NMatrix& nmatrix, std::vector<double>& roots)
 {
-    if(roots.size() < nmatrix.get_row_size())
+    if(roots.size() < (int)nmatrix.get_row_size())
     {
         roots.resize(nmatrix.get_row_size(), 0);
     }
