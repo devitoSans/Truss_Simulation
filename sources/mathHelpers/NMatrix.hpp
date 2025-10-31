@@ -48,7 +48,7 @@ class NMatrix
             this->data = (double*)calloc(size*(size+1), sizeof(double));
             this->size = size;
         }
-        NMatrix(std::vector<std::vector<double>>&& matrix)
+        NMatrix(std::vector<std::vector<double>> matrix)
         {
             this->data = (double*)calloc(matrix.size()*(matrix.size()+1), sizeof(double));
             this->size = matrix.size();
