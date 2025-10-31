@@ -10,57 +10,8 @@
 #include <splashkit.h>
 #include "NMatrix.hpp"
 
-// TODO: remove this
-/**
- * If all columns, except for the last one, are zero, then 
- * the linear equations is not single-solution.
- */
-bool is_zero_columns_exist(NMatrix& nmatrix)
-{
-    bool valid = true;
-    for(int i = 0; i < nmatrix.get_row_size(); i++)
-    {
-        bool isAllZero = true;
-        for(int j = 0; j < nmatrix.get_col_size()-1; j++)
-        {
-            if(nmatrix.get(i,j) != 0)
-            {
-                isAllZero = false;
-            }
-        }
-        valid = !isAllZero;
-        if(!valid)
-        {
-            break;
-        }
-    }
-    return !valid;
-}
 
-// TODO: and this
-bool is_zero_rows_exist(NMatrix& nmatrix)
-{
-    bool valid = true;
-    for(int j = 0; j < nmatrix.get_col_size()-1; j++)
-    {
-        bool isAllZero = true;
-        for(int i = 0; i < nmatrix.get_row_size(); i++)
-        {
-            if(nmatrix.get(i,j) != 0)
-            {
-                isAllZero = false;
-            }
-        }
-        valid = !isAllZero;
-        if(!valid)
-        {
-            break;
-        }
-    }
-    return !valid;
-}
-
-int find_max_pivot(int currentPivotRow, NMatrix& nmatrix)
+inline int find_max_pivot(int currentPivotRow, NMatrix& nmatrix)
 {
     int pivotCol = currentPivotRow;
 
@@ -78,7 +29,7 @@ int find_max_pivot(int currentPivotRow, NMatrix& nmatrix)
     return pivotIndex;
 }
 
-void swap_row(int row1, int row2, NMatrix& nmatrix)
+inline void swap_row(int row1, int row2, NMatrix& nmatrix)
 {
     for(int i = 0; i < nmatrix.get_col_size(); i++)
     {
@@ -88,7 +39,7 @@ void swap_row(int row1, int row2, NMatrix& nmatrix)
     }
 }
 
-void __foward_elimination(NMatrix& nmatrix)
+inline void __foward_elimination(NMatrix& nmatrix)
 {
     // Looping through the columns, except for the last one.
     for(int pivotCol = 0; pivotCol < nmatrix.get_col_size()-1; pivotCol++)
@@ -119,7 +70,7 @@ void __foward_elimination(NMatrix& nmatrix)
 }
 
 // Assuming nmatrix is in Row Echelon Form (ref)
-void __back_substitution(NMatrix& nmatrix, std::vector<double>& roots)
+inline void __back_substitution(NMatrix& nmatrix, std::vector<double>& roots)
 {
     int last_index_row = nmatrix.get_row_size()-1, last_index_col = nmatrix.get_col_size()-1;
 
@@ -139,7 +90,7 @@ void __back_substitution(NMatrix& nmatrix, std::vector<double>& roots)
 }
 
 // Solve using gauss algorithm, forward elimination and backward subsitution.
-bool solve_linear_equations(NMatrix& nmatrix, std::vector<double>& roots)
+inline bool solve_linear_equations(NMatrix& nmatrix, std::vector<double>& roots)
 {
     if(roots.size() < (int)nmatrix.get_row_size())
     {

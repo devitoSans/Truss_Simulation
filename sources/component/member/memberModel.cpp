@@ -267,6 +267,11 @@ void MemberModel::set_scale(double newScale)
     this->modify_length(this->properties.get_length());
 }
 
+const MemberData& MemberModel::read_properties() const
+{
+    return this->properties;
+}
+
 // Modifying length that changes both start's and end's pos.
 void MemberModel::modify_length(double newLength)
 {

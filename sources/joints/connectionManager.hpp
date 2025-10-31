@@ -13,11 +13,13 @@
 #include "../component/supports/supportController.hpp"
 #include "../component/force/forceController.hpp"
 
+typedef std::map<int, std::set<Connection>> JointList;
+
 class ConnectionManager
 {
     private:
         // key: joint's id
-        std::map<int, std::set<Connection>> joints;
+        JointList joints;
         std::map<Connection,int> r_joints; // as a lookup table to easy to search which joint a component's part is connected to
 
         bool isReady;
@@ -126,12 +128,100 @@ class ConnectionManager
             }
         }
 
+        ComponentController* extract_component(int id, ComponentController** components, int numComponentType)
+        {
+            ComponentController* componentController = nullptr;
+            for(int i = 0; i < numComponentType; i++)
+            {
+                if(components[i]->get_type(id) != ComponentType::NONE)
+                {
+                    componentController = components[i];
+                    break;
+                }
+            }
+            if(componentController == nullptr)
+            {
+                fprintf(stderr, "Warning: Attempting to extract a non-existing component. ID is not found.");
+            }
+            return componentController;
+        }
+
     public:
         ConnectionManager() : isReady(true) {}
 
-        std::map<int, std::set<Connection>>& get_joints()
+        const JointList& read_joints() const
         {
             return this->joints;
+        }
+
+        std::vector<std::vector<double>> convert_joints(ComponentController** components, int numComponentType)
+        {
+            int numOfEquation = 2*this->joints.size();
+            std::vector<std::vector<double>> matrix(numOfEquation, 
+                std::vector<double>(numOfEquation+1, 0)
+            );
+
+            int currentRow = 0, currentCol = 0;
+            std::map<int,int> mapping;
+
+            for(auto& joint : this->joints)
+            {
+                for(auto& connection : joint.second)
+                {
+                    auto [id, _] = connection;
+                    ComponentController* cc = this->extract_component(id, components, numComponentType);
+
+                    // extract each component's part's angles
+                    for(auto& angle : cc->get_part_angles(connection))
+                    {
+                        // Force is not unknown variable
+                        if(cc->get_type() == ComponentType::FORCE)
+                        {
+                            matrix[currentRow][numOfEquation] -= cc->get_forces(connection)[0] * std::sin(TO_RAD(angle));
+                            matrix[currentRow+1][numOfEquation] -= cc->get_forces(connection)[0] * std::cos(TO_RAD(angle));
+                            continue;
+                        }
+
+                        // Support 
+                        if(cc->get_type() == ComponentType::SUPPORT)
+                        {
+                            matrix[currentRow][currentCol] = std::sin(TO_RAD(angle));
+                            matrix[currentRow+1][currentCol] = std::cos(TO_RAD(angle));
+                            currentCol++;
+                            continue;
+                        }
+                    
+                        // Check if a particular member is already been considered
+                        // and assigned to the matrix
+                        if(mapping.find(id) == mapping.end())
+                        {
+                            matrix[currentRow][currentCol] = std::sin(TO_RAD(angle));
+                            matrix[currentRow+1][currentCol] = std::cos(TO_RAD(angle));
+
+                            // Save its id
+                            mapping[id] = currentCol; currentCol++;
+
+                            // Unknown variables (reaction forces, and members' forces)
+                            // are greater than number of equations (twice of the joints).
+                            // Therefore, system is indeteriminant.
+                            if(currentCol > numOfEquation) { return {}; }
+
+                            continue;
+                        }
+                        else
+                        {
+                            int col = mapping.at(id);
+                            matrix[currentRow][col] = std::sin(TO_RAD(angle));
+                            matrix[currentRow+1][col] = std::cos(TO_RAD(angle));
+
+                            continue;
+                        }
+                    }
+                }
+                currentRow += 2;
+            }
+
+            return matrix;
         }
 
         bool update(ComponentController** components, int numComponentType, int focusedID)
@@ -186,16 +276,16 @@ class ConnectionManager
                 }
             }
 
-            // for(auto& j : this->joints)
-            // {
-            //     printf("joint: %d -> ", j.first);
-            //     for(auto& c : j.second)
-            //     {
-            //         printf("%d, ", c.first);
-            //     }
-            //     printf("\n");
-            // }
-            // printf("\n\n");
+            for(auto& j : this->joints)
+            {
+                printf("joint: %d -> ", j.first);
+                for(auto& c : j.second)
+                {
+                    printf("%d, ", c.first);
+                }
+                printf("\n");
+            }
+            printf("\n\n");
             return true;
         }
 };

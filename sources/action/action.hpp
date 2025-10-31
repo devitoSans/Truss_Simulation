@@ -27,7 +27,10 @@ namespace ActionType
         FORCE_CREATE,
         FORCE_DELETE,
         FORCE_MOVE,
-        FORCE_ROTATE
+        FORCE_ROTATE,
+
+        // CALCULATION
+        CALCULATE_FORCE
     };
 }
 

@@ -193,6 +193,40 @@ class MultiSupportController : public ComponentController
             return intersected_id;
         }
 
+        std::vector<double> get_part_angles(const Connection& connection) const override
+        {
+            if(this->get_type(connection.first) != ComponentType::SUPPORT)
+            {
+                fprintf(stderr, "\n\nWarning: Attempting to get an unidentified support's angles, aka. ID is not found.\n");
+                return {};
+            }
+            const SupportModel* support = this->supports.at(connection.first);
+            std::vector<double> angles;
+
+            if(support->read_properties().hasVertical)
+            {
+                angles.push_back(ANGLE(-support->get_angle()+180));
+            }
+            if(support->read_properties().hasHorizontal)
+            {
+                angles.push_back(ANGLE(-support->get_angle()+90));
+            }
+            return angles;
+        }
+
+        std::vector<double> get_forces(const Connection& connection) const override
+        {
+            if(this->get_type(connection.first) != ComponentType::SUPPORT)
+            {
+                fprintf(stderr, "\n\nWarning: Attempting to get an unidentified support's forces, aka. ID is not found.\n");
+                return {};
+            }
+            return { 
+                this->supports.at(connection.first)->read_properties().verticalForce,
+                this->supports.at(connection.first)->read_properties().horizontalForce
+            };
+        }
+
         int update(bool canUpdate) override
         {
             this->inActionID = -1;

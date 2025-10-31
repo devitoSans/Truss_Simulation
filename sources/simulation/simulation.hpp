@@ -8,6 +8,8 @@
 #include "../component/force/forceController.hpp"
 #include "../joints/connectionManager.hpp"
 #include "../action/action.hpp"
+#include "../mathHelpers/NMatrix.hpp"
+#include "../mathHelpers/linearEquations.hpp"
 #include <cassert>
 
 const int NUM_COMPONENT_TYPE = 3;
@@ -53,16 +55,71 @@ class Simulation
                 this->prevInActionID = this->focusedID;
             }
             this->connectionManager.update(this->components, NUM_COMPONENT_TYPE, this->prevInActionID);
-            if(requestAction.click(key_down(KEYPAD_ENTER), (ActionType::ActionType)-1234, -1234))
+
+            if(requestAction.click(key_down(SPACE_KEY), 
+                                   ActionType::CALCULATE_FORCE, 
+                                   ActionType::CALCULATE_FORCE) &&
+                this->connectionManager.read_joints().size() > 0)
             {
-                this->calculate();
+                std::vector<std::vector<double>> v = this->connectionManager.convert_joints(this->components, NUM_COMPONENT_TYPE);
+                if(v.size() == 0)
+                {
+                    printf("Truss design is indeterminate!\n");   
+                }
+                
+                printf("Calculating...\n");
+                for(auto& i : v)
+                {
+                    for(auto& j : i)
+                    {
+                        printf("%f, ", j);
+                    }
+                    printf("\n");
+                }
+                
+                std::vector<double> forces;
+                NMatrix nmatrix = NMatrix(v);
+                if(!solve_linear_equations(nmatrix, forces))
+                {
+                    printf("Truss design is indeterminate!\n");
+                }
+                printf("forces: ");
+                for(auto& i : forces)
+                {
+                    printf("%f, ", i);
+                }
+                printf("\n");
             }
         }
 
-        void calculate()
-        {
+        // void calculate()
+        // {
+            // const JointList& joints = this->connectionManager.read_joints();
             
-        }
+            // int unknownVariablesTotal = 0;
+            // std::set<int> temp;
+            // for(auto& [_, joint] : joints)
+            // {
+            //     for(auto& connection : joint)
+            //     {
+            //         for(auto)
+            //     }
+            // }
+            // unknownVariablesTotal = temp.size();
+
+            // printf("uv: %d, j: %d\n", unknownVariablesTotal, joints.size());
+            // if(unknownVariablesTotal < 2*joints.size())
+            // {
+            //     printf("Truss design is not in equilibrium state!\n");
+            //     return;
+            // }
+            // if(unknownVariablesTotal > 2*joints.size())
+            // {
+            //     printf("Truss design is indeterminate!\n");
+            //     return;
+            // }
+            // printf("Calculating...\n");
+        // }
 
         void IO()
         {

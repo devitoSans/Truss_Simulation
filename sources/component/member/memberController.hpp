@@ -220,6 +220,39 @@ class MultiMemberController : public ComponentController
             return intersected_id;
         }
 
+        std::vector<double> get_part_angles(const Connection& connection) const override
+        {
+            if(this->get_type(connection.first) != ComponentType::MEMBER)
+            {
+                fprintf(stderr, "\n\nWarning: Attempting to get an unidentified member's angles. ID is not found.\n");
+                return {};
+            }
+            const MemberModel& member = this->members.at(connection.first);
+            switch (connection.second)
+            {
+                case Part::MEMBER_START:
+                    return { ANGLE(-member.get_angle()) };
+
+                case Part::MEMBER_END:
+                    return { ANGLE(-member.get_counter_angle()) };
+
+                default:
+                    fprintf(stderr, "Warning: Attempting to get an unidentified member part's angles.");
+                    return {};
+            }
+        }
+
+        std::vector<double> get_forces(const Connection& connection) const override
+        {
+            if(this->get_type(connection.first) != ComponentType::MEMBER)
+            {
+                fprintf(stderr, "\n\nWarning: Attempting to get an unidentified member's forces. ID is not found.\n");
+                return {};
+            }
+
+            return { this->members.at(connection.first).read_properties().get_axial_force() };
+        }
+
         // return which member's id that is currently in focus (or selected)
         int update(bool canUpdate) override
         {   

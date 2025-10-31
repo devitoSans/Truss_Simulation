@@ -106,6 +106,8 @@ class MemberModel
 
         void set_scale(double newScale);
 
+        const MemberData& read_properties() const;
+
         void modify_length(double newLength);
         void modify_length_on_start(double newLength); // moves end only
         void modify_length_on_end(double newLength);   // moves start only

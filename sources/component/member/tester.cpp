@@ -314,10 +314,22 @@ void TEST2()
 
     open_window("Test", WIDTH, HEIGHT);
 
+    int a = -1;
     while(!quit_requested())
     {
         process_events();
-        membersController.update(true);
+        a = membersController.update(true);
+
+        Connection c = { a, Part::MEMBER_START };
+        for(auto& i : membersController.get_part_angles(c))
+        {
+            printf("angle: %f, ", i);
+        }
+        c.second = Part::MEMBER_END;
+        for(auto& i : membersController.get_part_angles(c))
+        {
+            printf("%f\n", i);
+        }
 
         clear_screen(color_white());
 

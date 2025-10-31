@@ -272,12 +272,20 @@ void TEST4()
 
     open_window("Test", WIDTH, HEIGHT);
 
+    int id = -1;
     while(!quit_requested())
     {
         process_events();
-        msc.update();
+        id = msc.update(true);
 
         clear_screen(color_white());
+        
+        Connection c = {id, Part::SUPPORT_HEAD};
+        for(auto& i : msc.get_part_angles(c))
+        {
+            printf("angle: %f, ", i);
+        }
+        printf("\n");
 
         msc.draw();
 
@@ -287,5 +295,5 @@ void TEST4()
 
 TEST_CASE("MultiSupportController (Manual Testing): Controlling  (Toggelable)")
 {
-    // TEST4();
+    TEST4();
 }

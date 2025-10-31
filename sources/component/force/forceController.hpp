@@ -146,6 +146,29 @@ class MultiForceController : public ComponentController
             return intersected_id;
         }
 
+        std::vector<double> get_part_angles(const Connection& connection) const override
+        {
+            if(this->get_type(connection.first) != ComponentType::FORCE)
+            {
+                fprintf(stderr, "\n\nWarning: Attempting to get an unidentified force's angles. ID is not found.\n");
+                return {};
+            }
+
+            const ForceModel& force = this->forces.at(connection.first);
+            return { ANGLE(-force.get_angle()) };
+        }
+
+        std::vector<double> get_forces(const Connection& connection) const override
+        {
+            if(this->get_type(connection.first) != ComponentType::FORCE)
+            {
+                fprintf(stderr, "\n\nWarning: Attempting to get an unidentified force's forces. ID is not found.\n");
+                return {};
+            }
+
+            return { this->forces.at(connection.first).get_force() };
+        }
+
         int update(bool canUpdate) override
         {
             this->inActionID = -1;

@@ -75,10 +75,17 @@ void TEST3()
 
     open_window("Test", WIDTH, HEIGHT);
 
+    int a = -1;
     while(!quit_requested())
     {
         process_events();
-        mfc.update();
+        a = mfc.update(true);
+
+        Connection c = { a, Part::FORCE_DOWN };
+        for(auto& i : mfc.get_part_angles(c))
+        {
+            printf("angle: %f\n", i);
+        }
 
         clear_screen(color_white());
 
@@ -90,5 +97,5 @@ void TEST3()
 
 TEST_CASE("MultiForceController (Manual Testing): Controlling (Toggleable)")
 {
-    // TEST3();
+    TEST3();
 }
