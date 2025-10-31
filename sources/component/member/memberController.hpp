@@ -187,25 +187,58 @@ class MultiMemberController : public ComponentController
             return (this->members.find(id) == this->members.end() ? ComponentType::NONE : this->get_type());
         }
 
+        std::vector<Hitbox> get_hit_box(int id) override
+        {
+            MemberModel idedMember = this->members.at(id);
+            return { 
+                Hitbox {
+                    circle { idedMember.get_start_pos().x, idedMember.get_start_pos().y, idedMember.get_scaled_girth()/2 },
+                    Part::MEMBER_START
+                },
+                Hitbox {
+                    circle { idedMember.get_end_pos().x, idedMember.get_end_pos().y, idedMember.get_scaled_girth()/2 },
+                    Part::MEMBER_END
+                }
+            };
+        }
+
+        // negative means it is connected to the start, while positive means there's connection at the end.
+        std::vector<Connection> get_intersection(double x, double y, double radius) const override
+        {
+            std::vector<Connection> intersected_id;
+            for(auto& [_, member] : this->members)
+            {
+                if(member.is_intersect_start(x,y,radius))
+                {
+                    intersected_id.push_back({member.get_id(), Part::MEMBER_START});
+                }
+                else if(member.is_intersect_end(x,y,radius))
+                {
+                    intersected_id.push_back({member.get_id(), Part::MEMBER_END});
+                }
+            }
+            return intersected_id;
+        }
+
         // return which member's id that is currently in focus (or selected)
         int update(bool canUpdate) override
-        {
+        {   
             // reset 
             this->inActionID = -1;
             this->create_member();
             this->delete_member();
-
+              
             if(canUpdate)
             {
                 for(auto& [_, member] : this->members)
                 {
                     if(this->focusedID != -1)
                     {
-                        this->rotate_start_member(this->members[this->focusedID]);
-                        this->rotate_end_member(this->members[this->focusedID]);
-                        this->move_start_member(this->members[this->focusedID]);
-                        this->move_end_member(this->members[this->focusedID]);
-                        this->move_member(this->members[this->focusedID]);
+                        this->rotate_start_member(this->members.at(this->focusedID));
+                        this->rotate_end_member(this->members.at(this->focusedID));
+                        this->move_start_member(this->members.at(this->focusedID));
+                        this->move_end_member(this->members.at(this->focusedID));
+                        this->move_member(this->members.at(this->focusedID));
                     }
                     if(this->focusedID != this->inActionID || this->focusedID == -1)
                     {
@@ -221,24 +254,6 @@ class MultiMemberController : public ComponentController
             this->set_focused_member_id(ComponentType::MEMBER);
             this->clear_focused_member(ComponentType::MEMBER);
             return this->focusedID;
-        }
-
-        // negative means it is connected to the start, while positive means there's connection at the end.
-        std::vector<int> is_intersect(double x, double y, double radius) const override
-        {
-            std::vector<int> intersected_id;
-            for(auto& [_, member] : this->members)
-            {
-                if(member.is_intersect_start(x,y,radius))
-                {
-                    intersected_id.push_back(-member.get_id());
-                }
-                else if(member.is_intersect_end(x,y,radius))
-                {
-                    intersected_id.push_back(member.get_id());
-                }
-            }
-            return intersected_id;
         }
         
         void draw(double scale=5.0) override

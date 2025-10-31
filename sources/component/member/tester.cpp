@@ -317,7 +317,7 @@ void TEST2()
     while(!quit_requested())
     {
         process_events();
-        membersController.update();
+        membersController.update(true);
 
         clear_screen(color_white());
 
@@ -329,5 +329,5 @@ void TEST2()
 
 TEST_CASE("MultiMemberController (Manual Testing): Controlling Members (Toggleable)")
 {
-    TEST2();
+    // TEST2();
 }

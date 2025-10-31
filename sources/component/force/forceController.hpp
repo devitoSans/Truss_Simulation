@@ -120,6 +120,32 @@ class MultiForceController : public ComponentController
             return (this->forces.find(id) == this->forces.end() ? ComponentType::NONE : this->get_type());
         }
 
+        std::vector<Hitbox> get_hit_box(int id) override
+        {
+            const ForceModel& idedForce = this->forces.at(id);
+            return { 
+                Hitbox {
+                    circle { idedForce.get_mid_pos().x, 
+                              idedForce.get_mid_pos().y, 
+                              idedForce.get_scaled_pin_girth() },
+                    Part::FORCE_DOWN
+                }
+            };
+        }
+
+        std::vector<Connection> get_intersection(double x, double y, double radius) const override
+        {
+            std::vector<Connection> intersected_id;
+            for(auto& [_, force] : this->forces)
+            {
+                if(force.is_intersect(x,y,radius))
+                {
+                    intersected_id.push_back({force.get_id(), Part::FORCE_DOWN});
+                }
+            }
+            return intersected_id;
+        }
+
         int update(bool canUpdate) override
         {
             this->inActionID = -1;
@@ -132,8 +158,8 @@ class MultiForceController : public ComponentController
                 {
                     if(this->focusedID != -1)
                     {
-                        this->rotate_force(this->forces[this->focusedID]);
-                        this->move_force(this->forces[this->focusedID]);
+                        this->rotate_force(this->forces.at(this->focusedID));
+                        this->move_force(this->forces.at(this->focusedID));
                     }
                     if(this->focusedID != this->inActionID || this->focusedID == -1)
                     {
@@ -146,19 +172,6 @@ class MultiForceController : public ComponentController
             this->set_focused_member_id(ComponentType::FORCE);
             this->clear_focused_member(ComponentType::FORCE);
             return this->focusedID;
-        }
-
-        std::vector<int> is_intersect(double x, double y, double radius) const override
-        {
-            std::vector<int> intersected_id;
-            for(auto& [_, force] : this->forces)
-            {
-                if(force.is_intersect(x,y,radius))
-                {
-                    intersected_id.push_back(force.get_id());
-                }
-            }
-            return intersected_id;
         }
 
         void draw(double scale=5.0) override

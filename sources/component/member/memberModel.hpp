@@ -101,7 +101,8 @@ class MemberModel
         vector_2d get_end_pos() const;
         MemberData& get_properties();
         double get_scale() const;
-        double get_id() const;
+        int get_id() const;
+        double get_scaled_girth() const;
 
         void set_scale(double newScale);
 
@@ -122,7 +123,7 @@ class MemberModel
         bool is_intersect_end(double x, double y, double radius) const;   // circle vs end
         bool is_intersect_body(double x, double y) const;
 
-        void draw(color memberColor = color_black());
+        void draw(color memberColor = color_black()) const;
 };
 
 #endif

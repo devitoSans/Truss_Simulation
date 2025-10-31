@@ -165,6 +165,34 @@ class MultiSupportController : public ComponentController
             return (this->supports.find(id) == this->supports.end() ? ComponentType::NONE : this->get_type());
         }
 
+        std::vector<Hitbox> get_hit_box(int id) override
+        {
+            const SupportModel* idedSupport = this->supports.at(id);
+            return { 
+                Hitbox {
+                    circle {
+                        idedSupport->get_mid_pos().x,
+                        idedSupport->get_mid_pos().y,
+                        idedSupport->get_scaled_girth()/2
+                    }, 
+                    Part::SUPPORT_HEAD
+                } 
+            };
+        }
+
+        std::vector<Connection> get_intersection(double x, double y, double radius) const override
+        {
+            std::vector<Connection> intersected_id;
+            for(auto& [_, support] : this->supports)
+            {
+                if(support->is_intersect(x,y,radius))
+                {
+                    intersected_id.push_back({support->get_id(), Part::SUPPORT_HEAD});
+                }
+            }
+            return intersected_id;
+        }
+
         int update(bool canUpdate) override
         {
             this->inActionID = -1;
@@ -192,19 +220,6 @@ class MultiSupportController : public ComponentController
             this->set_focused_member_id(ComponentType::SUPPORT);
             this->clear_focused_member(ComponentType::SUPPORT);
             return this->focusedID;
-        }
-
-        std::vector<int> is_intersect(double x, double y, double radius) const override
-        {
-            std::vector<int> intersected_id;
-            for(auto& [_, support] : this->supports)
-            {
-                if(support->is_intersect(x,y,radius))
-                {
-                    intersected_id.push_back(support->get_id());
-                }
-            }
-            return intersected_id;
         }
 
         void draw(double scale=5.0) override

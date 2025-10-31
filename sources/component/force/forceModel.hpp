@@ -30,6 +30,7 @@ class ForceModel
         ForceModel(double initScale=5.0)
             : baseShape(initScale, {0.0, 0.0}, FORCE_WIDTH, FORCE_LENGTH, {0.0, -1.0})
         {
+            this->force = 1;
             this->id = mh_random(0, MAX_ID);
             this->update_scaled_pin_girth();
         }

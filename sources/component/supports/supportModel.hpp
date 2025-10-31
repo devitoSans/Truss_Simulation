@@ -34,9 +34,11 @@ class SupportModel
         virtual SupportModel* clone() const = 0;
 
         virtual int get_id() const = 0;
+        virtual const SupportData& read_properties() const = 0;
         virtual SupportData& get_properties() = 0;
         virtual vector_2d get_mid_pos() const = 0;
         virtual double get_angle() const = 0;
+        virtual double get_scaled_girth() const = 0;
 
         virtual void set_scale(double newScale) = 0;
 
@@ -76,7 +78,7 @@ class PinBaseModel : public SupportModel
             return this->baseShape.get_scaled_length();
         }
 
-        double get_scaled_girth() const
+        double get_scaled_girth() const override
         {
             return this->baseShape.get_scaled_width();
         }
@@ -87,7 +89,12 @@ class PinBaseModel : public SupportModel
             return vector_angle(dir);
         }
 
-        SupportData& get_properties()
+        const SupportData& read_properties() const override
+        {
+            return this->properties;
+        }
+
+        SupportData& get_properties() override
         {
             return this->properties;
         }

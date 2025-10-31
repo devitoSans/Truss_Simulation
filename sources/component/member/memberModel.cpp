@@ -226,6 +226,7 @@ vector_2d MemberModel::get_start_pos() const
 
 vector_2d MemberModel::get_mid_pos() const
 {
+    // printf("JUST UFCKY OU: %f", this->midPos.x);
     return this->midPos;
 }
 
@@ -244,9 +245,14 @@ double MemberModel::get_scale() const
     return this->scale;
 }
 
-double MemberModel::get_id() const
+int MemberModel::get_id() const
 {
     return this->properties.get_id();
+}
+
+double MemberModel::get_scaled_girth() const
+{
+    return this->properties.get_cross_section()->get_girth() * this->get_scale();
 }
 
 void MemberModel::set_scale(double newScale)
@@ -436,9 +442,9 @@ bool MemberModel::is_intersect_body(double x, double y) const
     return point_in_quad({ x, y }, q);
 }
 
-void MemberModel::draw(color memberColor)
+void MemberModel::draw(color memberColor) const
 {
-    double scaledGirth = this->properties.get_cross_section()->get_girth() * this->scale;
+    double scaledGirth = this->get_scaled_girth();
 
     // Start's circle
     draw_circle(memberColor, this->startPos.x, this->startPos.y, scaledGirth / 2);
