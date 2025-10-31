@@ -110,6 +110,7 @@ class NMatrix
             {
                 if(matrix[i].size() != matrix.size()+1)
                 {
+                    this->~NMatrix();
                     throw std::length_error("matrix must be size-by-(size+1). Found (" + std::to_string(matrix.size()) + ", " + std::to_string(matrix[0].size()) + ")");
                 }
             }
