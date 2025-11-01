@@ -32,12 +32,13 @@ class MultiForceController : public ComponentController
 {
     private:
         MultiForce forces;
+        std::string resourcesPath;
 
         void create_force()
         {
             if(requestAction.click(FORCE_CREATE_INPUT(), ActionType::FORCE_CREATE, ActionType::FORCE_CREATE))
             {
-                ForceModel temp = ForceModel();
+                ForceModel temp = ForceModel(5.0, this->resourcesPath);
                 temp.move(mouse_position().x, mouse_position().y);
                 this->forces.emplace(temp.get_id(), temp);
                 this->inActionID = temp.get_id();
@@ -108,7 +109,10 @@ class MultiForceController : public ComponentController
         }
 
     public:
-        MultiForceController() : forces() {}
+        MultiForceController(std::string resourcesPath) : forces() 
+        {
+            this->resourcesPath = resourcesPath;            
+        }
 
         ComponentType::ComponentType get_type() const override
         {
@@ -169,6 +173,20 @@ class MultiForceController : public ComponentController
             return { this->forces.at(connection.first).get_force() };
         }
 
+        void set_forces(int id, std::vector<ForceType::value> values) override
+        {
+            if(this->get_type(id) != ComponentType::FORCE)
+            {
+                fprintf(stderr, "\n\nWarning: Attempting to set an unidentified force's forces. ID is not found.\n");
+                return;
+            }
+
+            if(values[0]._typ == ForceType::LOAD)
+            {
+                this->forces.at(id).set_force(values[0]._val);
+            }
+        }
+
         int update(bool canUpdate) override
         {
             this->inActionID = -1;
@@ -202,11 +220,18 @@ class MultiForceController : public ComponentController
             for (auto it = this->forces.rbegin(); it != this->forces.rend(); it++) 
             {
                 auto& force = it->second;
+                if(force.get_id() == this->focusedID)
+                {
+                    continue;
+                }
+
                 force.set_scale(scale);
-                force.draw((this->focusedID == force.get_id() ? color_red() : color_black()),
-                            this->focusedID == force.get_id() ? color_dark_red() : color_dark_gray());
-            
-                        }
+                force.draw();
+            }
+            if(this->focusedID != -1)
+            {
+                this->forces.at(this->focusedID).draw(true, color_red(), color_dark_gray());
+            }
         }
 };
 

@@ -38,6 +38,7 @@ class MultiSupportController : public ComponentController
 {
     private:
         MultiSupport supports;
+        std::string resourcesPath;
 
         void erase_suport(int id)
         {
@@ -49,7 +50,7 @@ class MultiSupportController : public ComponentController
         {
             if(requestAction.click(PIN_CREATE_INPUT(), ActionType::SUPPORT_PIN_CREATE, ActionType::SUPPORT_PIN_CREATE))
             {
-                auto* ptr = new PinJointModel();
+                auto* ptr = new PinJointModel(5.0, this->resourcesPath);
                 ptr->move(mouse_position().x, mouse_position().y);
                 this->supports.emplace(ptr->get_id(), ptr);
                 this->inActionID = ptr->get_id();
@@ -60,7 +61,7 @@ class MultiSupportController : public ComponentController
         {
             if(requestAction.click(ROLLER_CREATE_INPUT(), ActionType::SUPPORT_ROLLER_CREATE, ActionType::SUPPORT_ROLLER_CREATE))
             {
-                auto* ptr = new Roller();
+                auto* ptr = new Roller(5.0, this->resourcesPath);
                 ptr->move(mouse_position().x, mouse_position().y);
                 this->supports.emplace(ptr->get_id(), ptr);
                 this->inActionID = ptr->get_id();
@@ -129,7 +130,10 @@ class MultiSupportController : public ComponentController
         }
 
     public:
-        MultiSupportController() : supports() {}
+        MultiSupportController(std::string resourcesPath) : supports() 
+        {
+            this->resourcesPath = resourcesPath;
+        }
         ~MultiSupportController()
         {
             for(auto& [_, support] : this->supports)
@@ -227,6 +231,29 @@ class MultiSupportController : public ComponentController
             };
         }
 
+        void set_forces(int id, std::vector<ForceType::value> values) override
+        {
+            if(this->get_type(id) != ComponentType::SUPPORT)
+            {
+                fprintf(stderr, "\n\nWarning: Attempting to set an unidentified support's forces, aka. ID is not found.\n");
+                return;
+            }
+
+            SupportModel* support = this->supports.at(id);
+
+            for(auto& [val, type] : values)
+            {
+                if(support->read_properties().hasVertical && type == ForceType::VERTICAL_REACTION)
+                {
+                    support->get_properties().verticalForce = val;
+                }
+                else if(support->read_properties().hasHorizontal && type == ForceType::HORIZONTAL_REACTION)
+                {
+                    support->get_properties().horizontalForce = val;
+                }
+            }
+        }
+
         int update(bool canUpdate) override
         {
             this->inActionID = -1;
@@ -262,7 +289,18 @@ class MultiSupportController : public ComponentController
             {
                 auto& support = it->second;
                 support->set_scale(scale);
-                support->draw((this->focusedID == support->get_id() ? color_red() : color_black()));
+                if(this->focusedID == support->get_id())
+                {
+                    continue;
+                }
+                else
+                {
+                    support->draw();
+                }
+            }
+            if(this->focusedID != -1)
+            {
+                supports.at(focusedID)->draw(true);
             }
         }
 };

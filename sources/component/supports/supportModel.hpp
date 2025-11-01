@@ -4,6 +4,7 @@
 #include <splashkit.h>
 #include "../../mathHelpers/mathHelpers.hpp"
 #include "../shapeBase.hpp"
+#include "../text/text.hpp"
 
 inline const double DEFAULT_PIN_GIRTH = 4.0;
 
@@ -48,7 +49,7 @@ class SupportModel
         virtual bool is_intersect(double x, double y) const = 0;
         virtual bool is_intersect(double x, double y, double radius) const = 0;
 
-        virtual void draw(color memberColor = color_black()) = 0;
+        virtual void draw(bool showInfo = false, color memberColor = color_black()) = 0;
 };
 
 class PinBaseModel : public SupportModel
@@ -57,13 +58,15 @@ class PinBaseModel : public SupportModel
         int id;
         SupportData properties;
         OneSideShapeBase baseShape;
+        std::string resourcesPath;
     
     public:
-        PinBaseModel(double initScale, double height, double girth, bool hasVerticalReaction, bool hasHorizontalReaction)
+        PinBaseModel(double initScale, double height, double girth, bool hasVerticalReaction, bool hasHorizontalReaction, std::string resourcesPath)
             : properties(hasVerticalReaction, hasHorizontalReaction),
               baseShape(initScale, {0.0, 0.0}, girth, height, {0.0, 1.0})
         {
             this->id = mh_random(0,MAX_ID);
+            this->resourcesPath = resourcesPath;
         }
 
         virtual SupportModel* clone() const = 0;
@@ -155,20 +158,30 @@ class PinBaseModel : public SupportModel
                                      x, y, radius);
         }
 
-        void draw(color supportColor = color_black()) override
+        void draw(bool showInfo = false, color supportColor = color_black()) override
         {
+            if(showInfo)
+            {
+                supportColor = color_red();
+            }
+
             draw_circle(supportColor, this->baseShape.get_head_pos().x, this->baseShape.get_head_pos().y, this->get_scaled_girth()/2);
             draw_triangle(supportColor, this->baseShape.get_head_pos().x, this->baseShape.get_head_pos().y,
                                         this->get_left_pos().x, this->get_left_pos().y,
                                         this->get_right_pos().x, this->get_right_pos().y);
+
+            if(showInfo)
+            {
+                drawInfo(this->resourcesPath, ANGLE(-this->get_angle()), "°", supportColor, this->baseShape.get_head_pos().x, this->baseShape.get_head_pos().y, this->get_scaled_girth()/2.0);
+            }
         }
 };
 
 class PinJointModel : public PinBaseModel
 {
     public:
-        PinJointModel(double initScale=5.0) 
-            : PinBaseModel(initScale, DEFAULT_PIN_GIRTH*1.1, DEFAULT_PIN_GIRTH, true, true) {}
+        PinJointModel(double initScale=5.0, std::string resourcesPath="") 
+            : PinBaseModel(initScale, DEFAULT_PIN_GIRTH*1.1, DEFAULT_PIN_GIRTH, true, true, resourcesPath) {}
 
         SupportModel* clone() const override
         {
@@ -212,8 +225,8 @@ class Roller : public PinBaseModel
         }
 
     public:
-        Roller(double initScale=5.0) 
-            : PinBaseModel(initScale, DEFAULT_PIN_GIRTH*23.0/30.0, DEFAULT_PIN_GIRTH, true, false)
+        Roller(double initScale=5.0, std::string resourcesPath="") 
+            : PinBaseModel(initScale, DEFAULT_PIN_GIRTH*23.0/30.0, DEFAULT_PIN_GIRTH, true, false, resourcesPath)
         {
             this->scaledWheelRadius = (DEFAULT_PIN_GIRTH * initScale / 3.0) / 2.0;
             this->update();
@@ -251,9 +264,10 @@ class Roller : public PinBaseModel
             return PinBaseModel::is_intersect(x,y);
         }
 
-        void draw(color supportColor = color_black())
+        void draw(bool showInfo = false, color supportColor = color_black())
         {
-            PinBaseModel::draw(supportColor);
+            PinBaseModel::draw(showInfo, supportColor);
+            if(showInfo) { supportColor = color_red(); }
             draw_circle(supportColor, this->midWheelPos.x, this->midWheelPos.y, this->scaledWheelRadius);
             draw_circle(supportColor, this->leftWheelPos.x, this->leftWheelPos.y, this->scaledWheelRadius);
             draw_circle(supportColor, this->rightWheelPos.x, this->rightWheelPos.y, this->scaledWheelRadius);

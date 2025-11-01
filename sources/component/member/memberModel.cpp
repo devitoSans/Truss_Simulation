@@ -21,8 +21,7 @@ MemberData::MemberData(double length,
     this->id = (unsigned)mh_random(0, MAX_ID);
     this->set_length(length);
 
-    this->jointIDAtStart = -1;
-    this->jointIDAtEnd = -1;
+    this->axialForce = 0;
 }
 
 MemberData::MemberData(const MemberData& obj)
@@ -34,9 +33,6 @@ MemberData::MemberData(const MemberData& obj)
     this->material = obj.material->clone();
 
     this->axialForce = obj.axialForce;
-
-    this->jointIDAtStart = obj.jointIDAtStart;
-    this->jointIDAtEnd = obj.jointIDAtEnd;
 }
 
 MemberData& MemberData::operator=(MemberData obj)
@@ -60,9 +56,6 @@ void MemberData::swap(MemberData& obj1, MemberData& obj2)
     std::swap(obj1.material, obj2.material);
 
     std::swap(obj1.axialForce, obj2.axialForce);
-
-    std::swap(obj1.jointIDAtStart, obj2.jointIDAtStart);
-    std::swap(obj1.jointIDAtEnd, obj2.jointIDAtEnd);
 }
 
 unsigned int MemberData::get_id() const
@@ -90,16 +83,6 @@ const Materials* MemberData::get_material() const
     return this->material;
 }
 
-int MemberData::get_joint_id_at_start() const
-{
-    return this->jointIDAtStart;
-}
-
-int MemberData::get_joint_id_at_end() const
-{
-    return this->jointIDAtEnd;
-}
-
 double MemberData::get_axial_force() const
 {
     return this->axialForce;
@@ -120,16 +103,6 @@ bool MemberData::set_length(double newLength)
 void MemberData::set_axial_force(double axialForce)
 {
     this->axialForce = axialForce;
-}
-
-void MemberData::set_joint_id_at_start(int id)
-{
-    this->jointIDAtStart = id;
-}
-
-void MemberData::set_joint_id_at_end(int id)
-{
-    this->jointIDAtEnd = id;
 }
 
 bool MemberData::is_yielded()
@@ -196,7 +169,7 @@ void MemberModel::update_mid_pos()
 
 // PUBLIC
 
-MemberModel::MemberModel(double length, double scale, cs_type::cross_section_type type, Materials* material)
+MemberModel::MemberModel(double length, double scale, cs_type::cross_section_type type, Materials* material, std::string resourcesPath)
 {
     this->properties = MemberData(length, type, material);
     this->scale = scale;
@@ -207,6 +180,7 @@ MemberModel::MemberModel(double length, double scale, cs_type::cross_section_typ
 
     this->set_angle(0);
     this->modify_length(length);
+    this->resourcesPath = resourcesPath;
 }
 
 // In a screen orientation, up is negative and down is positive.
@@ -453,8 +427,17 @@ bool MemberModel::is_intersect_body(double x, double y) const
     return point_in_quad({ x, y }, q);
 }
 
-void MemberModel::draw(color memberColor) const
+void MemberModel::draw(bool showInfo, color memberColor) const
 {
+    if(this->read_properties().get_axial_force() != 0)
+    {
+        memberColor = color_red();
+    }
+    else if(showInfo)
+    {
+        memberColor = color_red();
+    }
+
     double scaledGirth = this->get_scaled_girth();
 
     // Start's circle
@@ -482,4 +465,47 @@ void MemberModel::draw(color memberColor) const
     vector_2d botStart = vector_add(botDirection, this->startPos);
     vector_2d botEnd = vector_add(botStart, line);
     draw_line(memberColor, botStart.x, botStart.y, botEnd.x, botEnd.y);
+
+    if(this->properties.get_axial_force() != 0)
+    {
+        drawInfo(this->resourcesPath,
+                this->read_properties().get_axial_force(), 
+                " N", 
+                memberColor, 
+                this->get_mid_pos().x, 
+                this->get_mid_pos().y,
+                this->get_scaled_girth()/2);
+    }
+    else if(showInfo)
+    {
+        // Start's circle
+        fill_circle(color_blue(), this->startPos.x, this->startPos.y, scaledGirth / 2);
+
+        // End's circle
+        fill_circle(color_green(), this->endPos.x, this->endPos.y, scaledGirth / 2);
+
+        drawInfo(this->resourcesPath,
+                ANGLE(-this->get_angle()), 
+                "°", 
+                color_blue(), 
+                this->get_start_pos().x, 
+                this->get_start_pos().y,
+                this->get_scaled_girth()/2);
+
+        drawInfo(this->resourcesPath,
+                ANGLE(-this->get_counter_angle()), 
+                "°", 
+                color_green(), 
+                this->get_end_pos().x, 
+                this->get_end_pos().y,
+                this->get_scaled_girth()/2);
+
+        drawInfo(this->resourcesPath,
+                this->read_properties().get_length(), 
+                " mm", 
+                memberColor, 
+                this->get_mid_pos().x, 
+                this->get_mid_pos().y,
+                this->get_scaled_girth()/2);
+    }
 }

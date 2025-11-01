@@ -188,7 +188,7 @@ void TEST1()
         pinJointModel.move(mouse_position().x, mouse_position().y);
 
         clear_screen(color_white());
-        pinJointModel.draw();
+        pinJointModel.draw(true);
 
         refresh_screen(60);
     }
@@ -246,7 +246,7 @@ void TEST3()
         roller.move(mouse_position().x, mouse_position().y);
 
         clear_screen(color_white());
-        roller.draw();
+        roller.draw(true, color_black());
 
         refresh_screen(60);
     }
@@ -266,7 +266,7 @@ TEST_CASE("Roller (Manual Testing): Move & Rotate  (Toggelable)")
 
 void TEST4()
 {
-    MultiSupportController msc = MultiSupportController();
+    MultiSupportController msc = MultiSupportController("../../../resources/");
 
     const int WIDTH = 640, HEIGHT = 480; 
 

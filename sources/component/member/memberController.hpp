@@ -65,12 +65,13 @@ class MultiMemberController : public ComponentController
 {
     private:
         MultiMember members;
+        std::string resourcesPath;
 
         void create_member()
         {
             if(requestAction.click(MEMBER_CREATE_INPUT(), ActionType::MEMBER_CREATE, ActionType::MEMBER_CREATE))
             {
-                MemberModel tempModel = MemberModel(20, 5.0);
+                MemberModel tempModel = MemberModel(20.0, 5.0, cs_type::RECTANGLE_WITH_CIRCLE_OUT, new Acrylic(), this->resourcesPath);
                 this->inActionID = tempModel.get_properties().get_id();
 
                 tempModel.modify_mid_pos(mouse_position().x, mouse_position().y);
@@ -170,7 +171,10 @@ class MultiMemberController : public ComponentController
 
     public:
         // ..
-        MultiMemberController() : members() {}
+        MultiMemberController(std::string resourcesPath) : members() 
+        {
+            this->resourcesPath = resourcesPath;
+        }
 
         MultiMember& get_members()
         {
@@ -253,6 +257,19 @@ class MultiMemberController : public ComponentController
             return { this->members.at(connection.first).read_properties().get_axial_force() };
         }
 
+        void set_forces(int id, std::vector<ForceType::value> values) override
+        {
+            if(this->get_type(id) != ComponentType::MEMBER)
+            {
+                fprintf(stderr, "\n\nWarning: Attempting to set an unidentified member's forces. ID is not found.\n");
+                return;
+            }
+            if(values[0]._typ == ForceType::AXIAL)
+            {
+                this->members.at(id).get_properties().set_axial_force(values[0]._val);
+            }
+        }
+
         // return which member's id that is currently in focus (or selected)
         int update(bool canUpdate) override
         {   
@@ -296,7 +313,14 @@ class MultiMemberController : public ComponentController
                 auto& member = it->second;
                 member.set_scale(scale);
                 const int id = member.get_properties().get_id();
-                member.draw((this->focusedID == id ? color_red() : color_black()));
+                if(this->focusedID != id)
+                {
+                    member.draw();
+                }
+            }
+            if(this->focusedID != -1)
+            {
+                this->members.at(this->focusedID).draw(true);
             }
         }
 };

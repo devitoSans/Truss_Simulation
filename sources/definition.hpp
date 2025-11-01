@@ -33,6 +33,25 @@ namespace Part
     };
 }
 
+namespace ForceType
+{
+    enum type
+    {
+        LOAD,
+
+        VERTICAL_REACTION,
+        HORIZONTAL_REACTION,
+
+        AXIAL
+    };
+
+    struct value
+    {
+        double _val;
+        double _typ;
+    };
+}
+
 // first: component's id. 
 // second: the part that is connected
 typedef std::pair<int,Part::PartType> Connection;
@@ -43,7 +62,5 @@ struct Hitbox
     circle shape;
     Part::PartType type;
 };
-
-
 
 #endif

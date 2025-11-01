@@ -69,7 +69,7 @@ TEST_CASE("ForceModel (Manual Testing): Moving and rotating (Toggleable)")
 
 void TEST3()
 {
-    MultiForceController mfc = MultiForceController();
+    MultiForceController mfc = MultiForceController("../../../resources/");
 
     const int WIDTH = 640, HEIGHT = 480; 
 

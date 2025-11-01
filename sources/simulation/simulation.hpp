@@ -20,9 +20,9 @@ class Simulation
         double scale;
         // TODO: free this up
         ComponentController* components[NUM_COMPONENT_TYPE] = {
-            new MultiMemberController(),
-            new MultiSupportController(),
-            new MultiForceController()
+            new MultiMemberController("../resources/"),
+            new MultiSupportController("../resources/"),
+            new MultiForceController("../resources/")
         };
 
         int focusedID;

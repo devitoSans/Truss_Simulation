@@ -4,6 +4,7 @@
 #include <splashkit.h>
 #include "../shapeBase.hpp"
 #include "../../mathHelpers/mathHelpers.hpp"
+#include "../text/text.hpp"
 
 inline const double FORCE_WIDTH = 4;
 inline const double FORCE_LENGTH = 20;
@@ -21,18 +22,21 @@ class ForceModel
         OneSideShapeBase baseShape;
         double scaledPinGirth;
 
+        std::string resourcesPath;
+
         void update_scaled_pin_girth()
         {
             this->scaledPinGirth = FORCE_PIN_GIRTH/2.0 * this->baseShape.get_scale();
         }
 
     public:
-        ForceModel(double initScale=5.0)
+        ForceModel(double initScale=5.0, std::string resourcesPath="")
             : baseShape(initScale, {0.0, 0.0}, FORCE_WIDTH, FORCE_LENGTH, {0.0, -1.0})
         {
             this->force = 1;
             this->id = mh_random(0, MAX_ID);
             this->update_scaled_pin_girth();
+            this->resourcesPath = resourcesPath;
         }
 
         int get_id() const
@@ -178,8 +182,13 @@ class ForceModel
             );
         }
 
-        void draw(color forceColor = color_black(), color hitBoxColor = color_dark_gray()) const
+        void draw(bool showInfo = false, color forceColor = color_black(), color hitBoxColor = color_dark_gray()) const
         {
+            if(showInfo)
+            {
+                forceColor = color_red();
+            }
+
             quad q;
             q.points[0] = { this->get_left_feet_pos().x, this->get_left_feet_pos().y };
             q.points[1] = { this->get_right_feet_pos().x, this->get_right_feet_pos().y };
@@ -194,6 +203,27 @@ class ForceModel
             );
 
             draw_circle(hitBoxColor, this->baseShape.get_head_pos().x, this->baseShape.get_head_pos().y, this->get_scaled_pin_girth());
+
+            if(showInfo)
+            {
+                drawInfo(this->resourcesPath, 
+                         this->force, 
+                         " N", 
+                         forceColor, 
+                         this->baseShape.get_head_pos().x, 
+                         this->baseShape.get_head_pos().y, 
+                         this->baseShape.get_scaled_width()/2);
+
+                vector_2d dir = this->baseShape.get_body_axis_offset(this->baseShape.get_scaled_width()/2, 180);
+                dir = vector_add(dir, this->baseShape.get_feet_pos());
+                drawInfo(this->resourcesPath, 
+                         ANGLE(-this->get_angle()), 
+                         "°", 
+                         forceColor, 
+                         dir.x, 
+                         dir.y, 
+                         this->baseShape.get_scaled_width()/2);
+            }
         }
 };
 

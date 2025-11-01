@@ -245,14 +245,14 @@ TEST_CASE("Member Model: detection for start's, body's, and end's intersections"
 
 void TEST1()
 {
-    MemberModel Imember = MemberModel();
+    MemberModel Imember = MemberModel(20.0, 5.0);
 
     const int WIDTH = 640, HEIGHT = 480; 
 
     open_window("Test", WIDTH, HEIGHT);
     Imember.modify_mid_pos(WIDTH/2, HEIGHT/2);
     // Imember.modify_angle(-90);
-
+    
     double length = Imember.get_properties().get_length();
     while(!quit_requested())
     {
@@ -292,10 +292,11 @@ void TEST1()
         }
         length = std::max(0.0,length);
         // Imember.modify_length(length);
+        // Imember.get_properties().set_axial_force(Imember.read_properties().get_length());
         Imember.modify_start_pos(mouse_position().x, mouse_position().y);
 
         clear_screen(color_white());
-        Imember.draw();
+        Imember.draw(true);
         
         refresh_screen(60);
     } 
@@ -308,7 +309,7 @@ TEST_CASE("Member Model (Manual Testing): Drawing (Toggleable)")
 
 void TEST2()
 {
-    MultiMemberController membersController = MultiMemberController();
+    MultiMemberController membersController = MultiMemberController("../../../resources/");
 
     const int WIDTH = 640, HEIGHT = 480; 
 
@@ -341,5 +342,5 @@ void TEST2()
 
 TEST_CASE("MultiMemberController (Manual Testing): Controlling Members (Toggleable)")
 {
-    // TEST2();
+    TEST2();
 }

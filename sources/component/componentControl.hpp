@@ -54,6 +54,7 @@ class ComponentController
         virtual ComponentType::ComponentType get_type(int id) const = 0;
         virtual std::vector<double> get_part_angles(const Connection& connection) const = 0;
         virtual std::vector<double> get_forces(const Connection& connection) const = 0;
+        virtual void set_forces(int id, std::vector<ForceType::value> forces) = 0;
         virtual int update(bool canUpdate) = 0;
         virtual void draw(double scale=5.0) = 0;
 };

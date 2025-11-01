@@ -6,6 +6,7 @@
 #include "../../materials/materials.hpp"
 #include "../../materials/cross_section.hpp"
 #include "../../mathHelpers/mathHelpers.hpp"
+#include "../text/text.hpp"
 
 class MemberData
 {
@@ -21,9 +22,6 @@ class MemberData
         Materials* material;
 
         double axialForce; // N (negative -> compression, positive -> tension)
-
-        int jointIDAtStart;
-        int jointIDAtEnd;
 
     public:
         MemberData(double length=20,
@@ -66,6 +64,8 @@ class MemberModel
     private:
         MemberData properties;
 
+        std::string resourcesPath;
+
         // coordinates at the left of the member (if angle = 0)
         vector_2d startPos;
         // coordinates at the right of the member (if angle = 0)
@@ -92,7 +92,8 @@ class MemberModel
         MemberModel(double length=20,
                     double scale=20,
                     cs_type::cross_section_type type=cs_type::RECTANGLE_WITH_CIRCLE_OUT, 
-                    Materials* material=new Acrylic());
+                    Materials* material=new Acrylic(),
+                    std::string resourcesPath="");
 
         double get_angle() const;
         double get_counter_angle() const;
@@ -125,7 +126,7 @@ class MemberModel
         bool is_intersect_end(double x, double y, double radius) const;   // circle vs end
         bool is_intersect_body(double x, double y) const;
 
-        void draw(color memberColor = color_black()) const;
+        void draw(bool showInfo = false, color memberColor = color_black()) const;
 };
 
 #endif
