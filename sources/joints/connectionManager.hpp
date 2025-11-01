@@ -176,6 +176,7 @@ class ConnectionManager
                     // extract each component's part's angles
                     for(auto& [angle, forceType] : cc->get_part_angles(connection))
                     {
+
                         // Force is not unknown variable
                         if(cc->get_type() == ComponentType::FORCE)
                         {
@@ -187,6 +188,15 @@ class ConnectionManager
                         // Support 
                         if(cc->get_type() == ComponentType::SUPPORT)
                         {
+                            // Unknown variables (reaction forces, and members' forces)
+                            // are greater than number of equations (twice of the joints).
+                            // Therefore, system is indeteriminant.
+                            if(currentCol >= numOfEquation) 
+                            {
+                                fprintf(stderr, "tests\n");
+                                return {}; 
+                            }
+
                             matrix[currentRow][currentCol] = std::sin(TO_RAD(angle));
                             matrix[currentRow+1][currentCol] = std::cos(TO_RAD(angle));
 
@@ -204,6 +214,14 @@ class ConnectionManager
                         // and assigned to the matrix
                         if(mapping.find(id) == mapping.end())
                         {
+                            // Unknown variables (reaction forces, and members' forces)
+                            // are greater than number of equations (twice of the joints).
+                            // Therefore, system is indeteriminant.
+                            if(currentCol >= numOfEquation) 
+                            {
+                                fprintf(stderr, "tests\n");
+                                return {}; 
+                            }
                             matrix[currentRow][currentCol] = std::sin(TO_RAD(angle));
                             matrix[currentRow+1][currentCol] = std::cos(TO_RAD(angle));
 
@@ -214,11 +232,6 @@ class ConnectionManager
 
                             // Save its id
                             mapping[id] = currentCol; currentCol++;
-
-                            // Unknown variables (reaction forces, and members' forces)
-                            // are greater than number of equations (twice of the joints).
-                            // Therefore, system is indeteriminant.
-                            if(currentCol > numOfEquation) { return {}; }
 
                             continue;
                         }

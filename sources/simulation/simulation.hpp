@@ -63,10 +63,15 @@ class Simulation
             {
                 std::vector<std::pair<int,ForceType::type>> label;
                 std::vector<std::vector<double>> v = this->connectionManager.convert_joints(this->components, NUM_COMPONENT_TYPE, label);
+                // std::vector<std::vector<double>> v = {};
+                fprintf(stderr, "size: %d\n", v.size());
                 if(v.size() == 0)
                 {
-                    printf("Truss design is indeterminate!\n");   
+                    label.clear();
+                    printf("Truss design is indeterminate!\n");  
+                    return; 
                 }
+
                 
                 // printf("Calculating...\n");
                 // for(auto& i : v)
