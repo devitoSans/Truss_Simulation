@@ -184,7 +184,23 @@ class ForceModel
 
         void draw(bool showInfo = false, color forceColor = color_black(), color hitBoxColor = color_dark_gray()) const
         {
-            if(showInfo)
+            static bool yes = false;
+            bool asdf = false;
+            bool t = requestAction.is_in_action(ActionType::CALCULATE_FORCE, ActionType::CALCULATE_FORCE);
+            if(t)
+            {
+                yes = true;
+            }
+            if((requestAction.is_in_action(-1, ActionType::NONE) || t) && yes)
+            {
+                asdf = true;
+            }
+            else if(yes)
+            {
+                yes = false;
+            }
+
+            if(showInfo || asdf)
             {
                 forceColor = color_red();
             }
@@ -204,7 +220,19 @@ class ForceModel
 
             draw_circle(hitBoxColor, this->baseShape.get_head_pos().x, this->baseShape.get_head_pos().y, this->get_scaled_pin_girth());
 
-            if(showInfo)
+            if(asdf)
+            {
+                vector_2d dir = this->baseShape.get_body_axis_offset(this->baseShape.get_scaled_width()/2, 180);
+                dir = vector_add(dir, this->baseShape.get_feet_pos());
+                drawInfo(this->resourcesPath, 
+                         this->force, 
+                         " N", 
+                         forceColor, 
+                         dir.x, 
+                         dir.y, 
+                         this->baseShape.get_scaled_width()/2);
+            }
+            else if(showInfo)
             {
                 drawInfo(this->resourcesPath, 
                          this->force, 

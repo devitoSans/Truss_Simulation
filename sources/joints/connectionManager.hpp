@@ -154,7 +154,7 @@ class ConnectionManager
             return this->joints;
         }
 
-        std::vector<std::vector<double>> convert_joints(ComponentController** components, int numComponentType)
+        std::vector<std::vector<double>> convert_joints(ComponentController** components, int numComponentType, std::vector<std::pair<int,ForceType::type>>& label)
         {
             int numOfEquation = 2*this->joints.size();
             std::vector<std::vector<double>> matrix(numOfEquation, 
@@ -164,15 +164,17 @@ class ConnectionManager
             int currentRow = 0, currentCol = 0;
             std::map<int,int> mapping;
 
-            for(auto& joint : this->joints)
+            label.resize(numOfEquation, std::pair<int,ForceType::type>(0,ForceType::AXIAL));
+
+            for(auto& [_, joint] : this->joints)
             {
-                for(auto& connection : joint.second)
+                for(auto& connection : joint)
                 {
                     auto [id, _] = connection;
                     ComponentController* cc = this->extract_component(id, components, numComponentType);
 
                     // extract each component's part's angles
-                    for(auto& angle : cc->get_part_angles(connection))
+                    for(auto& [angle, forceType] : cc->get_part_angles(connection))
                     {
                         // Force is not unknown variable
                         if(cc->get_type() == ComponentType::FORCE)
@@ -187,6 +189,13 @@ class ConnectionManager
                         {
                             matrix[currentRow][currentCol] = std::sin(TO_RAD(angle));
                             matrix[currentRow+1][currentCol] = std::cos(TO_RAD(angle));
+
+                            // labeling
+                            int id_ = id;
+                            ForceType::type type_ = forceType;
+                            label[currentCol] = { id_, type_ };
+                            // printf("label: %d", labe/l[currentCol].first);
+                            
                             currentCol++;
                             continue;
                         }
@@ -197,6 +206,11 @@ class ConnectionManager
                         {
                             matrix[currentRow][currentCol] = std::sin(TO_RAD(angle));
                             matrix[currentRow+1][currentCol] = std::cos(TO_RAD(angle));
+
+                            // labeling
+                            int id_ = id;
+                            ForceType::type type_ = forceType;
+                            label[currentCol] = { id_, type_ };
 
                             // Save its id
                             mapping[id] = currentCol; currentCol++;
@@ -213,7 +227,6 @@ class ConnectionManager
                             int col = mapping.at(id);
                             matrix[currentRow][col] = std::sin(TO_RAD(angle));
                             matrix[currentRow+1][col] = std::cos(TO_RAD(angle));
-
                             continue;
                         }
                     }
@@ -276,16 +289,16 @@ class ConnectionManager
                 }
             }
 
-            for(auto& j : this->joints)
-            {
-                printf("joint: %d -> ", j.first);
-                for(auto& c : j.second)
-                {
-                    printf("%d, ", c.first);
-                }
-                printf("\n");
-            }
-            printf("\n\n");
+            // for(auto& j : this->joints)
+            // {
+            //     printf("joint: %d -> ", j.first);
+            //     for(auto& c : j.second)
+            //     {
+            //         printf("%d, ", c.first);
+            //     }
+            //     printf("\n");
+            // }
+            // printf("\n\n");
             return true;
         }
 };

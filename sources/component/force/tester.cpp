@@ -82,7 +82,7 @@ void TEST3()
         a = mfc.update(true);
 
         Connection c = { a, Part::FORCE_DOWN };
-        for(auto& i : mfc.get_part_angles(c))
+        for(auto& [i, _] : mfc.get_part_angles(c))
         {
             printf("angle: %f\n", i);
         }

@@ -169,6 +169,20 @@ class MultiMemberController : public ComponentController
             member.modify_end_pos(mousePos.x, mousePos.y);
         }
 
+        void clear_forces()
+        {
+            if(requestAction.is_in_action(-1, ActionType::NONE) || 
+               requestAction.is_in_action(ActionType::CALCULATE_FORCE, ActionType::CALCULATE_FORCE))
+            {
+                return;
+            }
+            for(auto& [_, member] : this->members)
+            {
+                int id = member.get_id();
+                this->set_forces(id, { {0.0, ForceType::AXIAL} });
+            }
+        }
+
     public:
         // ..
         MultiMemberController(std::string resourcesPath) : members() 
@@ -224,7 +238,7 @@ class MultiMemberController : public ComponentController
             return intersected_id;
         }
 
-        std::vector<double> get_part_angles(const Connection& connection) const override
+        std::vector<ForceAngle> get_part_angles(const Connection& connection) const override
         {
             if(this->get_type(connection.first) != ComponentType::MEMBER)
             {
@@ -235,10 +249,10 @@ class MultiMemberController : public ComponentController
             switch (connection.second)
             {
                 case Part::MEMBER_START:
-                    return { ANGLE(-member.get_angle()) };
+                    return { { ANGLE(-member.get_angle()), ForceType::AXIAL } };
 
                 case Part::MEMBER_END:
-                    return { ANGLE(-member.get_counter_angle()) };
+                    return { { ANGLE(-member.get_counter_angle()), ForceType::AXIAL } };
 
                 default:
                     fprintf(stderr, "Warning: Attempting to get an unidentified member part's angles.");
@@ -303,6 +317,7 @@ class MultiMemberController : public ComponentController
 
             this->set_focused_member_id(ComponentType::MEMBER);
             this->clear_focused_member(ComponentType::MEMBER);
+            this->clear_forces();
             return this->focusedID;
         }
         

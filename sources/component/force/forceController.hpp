@@ -150,7 +150,7 @@ class MultiForceController : public ComponentController
             return intersected_id;
         }
 
-        std::vector<double> get_part_angles(const Connection& connection) const override
+        std::vector<ForceAngle> get_part_angles(const Connection& connection) const override
         {
             if(this->get_type(connection.first) != ComponentType::FORCE)
             {
@@ -159,7 +159,7 @@ class MultiForceController : public ComponentController
             }
 
             const ForceModel& force = this->forces.at(connection.first);
-            return { ANGLE(-force.get_angle()) };
+            return { { ANGLE(-force.get_angle()), ForceType::LOAD } };
         }
 
         std::vector<double> get_forces(const Connection& connection) const override

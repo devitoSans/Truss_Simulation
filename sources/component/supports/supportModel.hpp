@@ -160,19 +160,40 @@ class PinBaseModel : public SupportModel
 
         void draw(bool showInfo = false, color supportColor = color_black()) override
         {
-            if(showInfo)
+            if(this->properties.verticalForce != 0.0)
+            {
+                supportColor = color_red();
+            }
+            if(this->properties.horizontalForce != 0.0)
+            {
+                supportColor = color_red();
+            }
+            bool showForce = (this->properties.verticalForce != 0.0) || this->properties.horizontalForce != 0.0;
+
+            if(showInfo && !showForce)
             {
                 supportColor = color_red();
             }
 
-            draw_circle(supportColor, this->baseShape.get_head_pos().x, this->baseShape.get_head_pos().y, this->get_scaled_girth()/2);
-            draw_triangle(supportColor, this->baseShape.get_head_pos().x, this->baseShape.get_head_pos().y,
+            point_2d headPos = { this->baseShape.get_head_pos().x, this->baseShape.get_head_pos().y };
+            double radius = this->get_scaled_girth()/2.0;
+
+            draw_circle(supportColor, headPos.x, headPos.y, radius);
+            draw_triangle(supportColor, headPos.x, headPos.y,
                                         this->get_left_pos().x, this->get_left_pos().y,
                                         this->get_right_pos().x, this->get_right_pos().y);
 
-            if(showInfo)
+            if(this->properties.verticalForce != 0.0)
             {
-                drawInfo(this->resourcesPath, ANGLE(-this->get_angle()), "°", supportColor, this->baseShape.get_head_pos().x, this->baseShape.get_head_pos().y, this->get_scaled_girth()/2.0);
+                drawInfo(this->resourcesPath, this->read_properties().verticalForce, " N", supportColor, headPos.x, headPos.y, radius, 15, "y: ");
+            }
+            if(this->properties.horizontalForce != 0.0)
+            {
+                drawInfo(this->resourcesPath, this->read_properties().horizontalForce, " N", supportColor, this->get_left_pos().x, this->get_left_pos().y, radius, 15, "x: ");
+            }
+            if(showInfo && !showForce)
+            {
+                drawInfo(this->resourcesPath, ANGLE(-this->get_angle()), "°", supportColor, headPos.x, headPos.y, radius);
             }
         }
 };

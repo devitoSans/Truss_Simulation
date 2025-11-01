@@ -129,6 +129,20 @@ class MultiSupportController : public ComponentController
             support->rotate(newAngle - diff);
         }
 
+        void clear_forces()
+        {
+            if(requestAction.is_in_action(-1, ActionType::NONE) || 
+               requestAction.is_in_action(ActionType::CALCULATE_FORCE, ActionType::CALCULATE_FORCE))
+            {
+                return;
+            }
+            for(auto& [_, support] : this->supports)
+            {
+                int id = support->get_id();
+                this->set_forces(id, { {0.0, ForceType::VERTICAL_REACTION}, {0.0, ForceType::HORIZONTAL_REACTION} });
+            }
+        }
+
     public:
         MultiSupportController(std::string resourcesPath) : supports() 
         {
@@ -197,7 +211,7 @@ class MultiSupportController : public ComponentController
             return intersected_id;
         }
 
-        std::vector<double> get_part_angles(const Connection& connection) const override
+        std::vector<ForceAngle> get_part_angles(const Connection& connection) const override
         {
             if(this->get_type(connection.first) != ComponentType::SUPPORT)
             {
@@ -205,15 +219,15 @@ class MultiSupportController : public ComponentController
                 return {};
             }
             const SupportModel* support = this->supports.at(connection.first);
-            std::vector<double> angles;
+            std::vector<ForceAngle> angles;
 
             if(support->read_properties().hasVertical)
             {
-                angles.push_back(ANGLE(-support->get_angle()+180));
+                angles.push_back({ ANGLE(-support->get_angle()+180), ForceType::VERTICAL_REACTION });
             }
             if(support->read_properties().hasHorizontal)
             {
-                angles.push_back(ANGLE(-support->get_angle()+90));
+                angles.push_back({ ANGLE(-support->get_angle()+90), ForceType::HORIZONTAL_REACTION });
             }
             return angles;
         }
@@ -280,6 +294,7 @@ class MultiSupportController : public ComponentController
 
             this->set_focused_member_id(ComponentType::SUPPORT);
             this->clear_focused_member(ComponentType::SUPPORT);
+            this->clear_forces();
             return this->focusedID;
         }
 

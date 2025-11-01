@@ -468,13 +468,16 @@ void MemberModel::draw(bool showInfo, color memberColor) const
 
     if(this->properties.get_axial_force() != 0)
     {
+        double force = this->read_properties().get_axial_force(); 
         drawInfo(this->resourcesPath,
-                this->read_properties().get_axial_force(), 
+                force, 
                 " N", 
                 memberColor, 
                 this->get_mid_pos().x, 
                 this->get_mid_pos().y,
-                this->get_scaled_girth()/2);
+                this->get_scaled_girth()/2,
+                15, 
+                (force < 0.0 ? "C: " : "T: "));
     }
     else if(showInfo)
     {

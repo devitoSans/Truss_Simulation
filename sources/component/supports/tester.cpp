@@ -281,7 +281,7 @@ void TEST4()
         clear_screen(color_white());
         
         Connection c = {id, Part::SUPPORT_HEAD};
-        for(auto& i : msc.get_part_angles(c))
+        for(auto& [i, _] : msc.get_part_angles(c))
         {
             printf("angle: %f, ", i);
         }

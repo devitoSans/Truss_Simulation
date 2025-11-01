@@ -3,7 +3,7 @@
 int main()
 {
     App app = App();
-    Simulation simulation = Simulation();
+    Simulation simulation = Simulation(5.0);
     
     while(!app.isQuit())
     {

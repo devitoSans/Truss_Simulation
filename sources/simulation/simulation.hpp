@@ -61,21 +61,22 @@ class Simulation
                                    ActionType::CALCULATE_FORCE) &&
                 this->connectionManager.read_joints().size() > 0)
             {
-                std::vector<std::vector<double>> v = this->connectionManager.convert_joints(this->components, NUM_COMPONENT_TYPE);
+                std::vector<std::pair<int,ForceType::type>> label;
+                std::vector<std::vector<double>> v = this->connectionManager.convert_joints(this->components, NUM_COMPONENT_TYPE, label);
                 if(v.size() == 0)
                 {
                     printf("Truss design is indeterminate!\n");   
                 }
                 
-                printf("Calculating...\n");
-                for(auto& i : v)
-                {
-                    for(auto& j : i)
-                    {
-                        printf("%f, ", j);
-                    }
-                    printf("\n");
-                }
+                // printf("Calculating...\n");
+                // for(auto& i : v)
+                // {
+                //     for(auto& j : i)
+                //     {
+                //         printf("%f, ", j);
+                //     }
+                //     printf("\n");
+                // }
                 
                 std::vector<double> forces;
                 NMatrix nmatrix = NMatrix(v);
@@ -83,12 +84,31 @@ class Simulation
                 {
                     printf("Truss design is indeterminate!\n");
                 }
-                printf("forces: ");
-                for(auto& i : forces)
+
+                for(int i = 0; i < label.size(); i++)
                 {
-                    printf("%f, ", i);
+                    for(int j = 0; j < NUM_COMPONENT_TYPE; j++)
+                    {
+                        int id = label[i].first;
+                        if(this->components[j]->get_type(label[i].first) == ComponentType::NONE)
+                        {
+                            continue;
+                        }
+                        this->components[j]->set_forces(id, { ForceType::value {forces[i], label[i].second} });
+                    }
                 }
-                printf("\n");
+                // printf("forces: ");
+                // for(auto& i : forces)
+                // {
+                //     printf("%f, ", i);
+                // }
+                // printf("\n");
+                // printf("label: ");
+                // for(auto& [id, forceType] : label)
+                // {
+                //     printf("%d -- %d, ", id, forceType);
+                // }
+                // printf("\n");
             }
         }
 

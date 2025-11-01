@@ -48,9 +48,15 @@ namespace ForceType
     struct value
     {
         double _val;
-        double _typ;
+        ForceType::type _typ;
     };
 }
+
+struct ForceAngle
+{
+    double angle;
+    ForceType::type type;
+};
 
 // first: component's id. 
 // second: the part that is connected

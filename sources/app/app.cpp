@@ -19,14 +19,13 @@ void App::run(Simulation& simulation)
     set_current_window(this->appWindow);
 
     process_events();
-
-    simulation.createMember();
+    simulation.IO();
     simulation.update();
 
     clear_screen(color_white());
+    simulation.draw();
 
-    simulation.drawAllMember();
-
+    draw_interface();
     refresh_screen(60);
 }
 

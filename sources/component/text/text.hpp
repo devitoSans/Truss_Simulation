@@ -9,7 +9,8 @@ inline void drawInfo(std::string resourcesPath,
                      std::string unit, 
                      color colorText, 
                      double x, double y, double radius,
-                     int fontSize = 15)
+                     int fontSize = 15,
+                     std::string label="")
 {
     // Setup font
     font fnt = load_font("VarelaRound", resourcesPath + "fonts/VarelaRound-Regular.ttf");
@@ -20,7 +21,7 @@ inline void drawInfo(std::string resourcesPath,
     // Format the text
     char buf[text.size()];
     std::snprintf(buf, sizeof(buf), "%.3f", value);
-    std::string formattedText = buf + unit;   
+    std::string formattedText = label + buf + unit;   
 
     // Get the text's width and height
     double width = text_width(formattedText, fnt, fontSize);
