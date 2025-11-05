@@ -10,7 +10,11 @@
 #include "../action/action.hpp"
 #include "../mathHelpers/NMatrix.hpp"
 #include "../mathHelpers/linearEquations.hpp"
+#include "../camera/camera.hpp"
+#include "../sidebar/sidebar.hpp"
 #include <cassert>
+
+#define RESOURCES_PATH "../resources/"
 
 const int NUM_COMPONENT_TYPE = 3;
 
@@ -20,24 +24,36 @@ class Simulation
         double scale;
         // TODO: free this up
         ComponentController* components[NUM_COMPONENT_TYPE] = {
-            new MultiMemberController("../resources/"),
-            new MultiSupportController("../resources/"),
-            new MultiForceController("../resources/")
+            new MultiMemberController(RESOURCES_PATH),
+            new MultiSupportController(RESOURCES_PATH),
+            new MultiForceController(RESOURCES_PATH)
         };
+
+        ConnectionManager connectionManager;
+
+        Sidebar sidebar;
+
+        int screenWidth;
+        int screenHeight;
 
         int focusedID;
         int prevInActionID;
 
-        ConnectionManager connectionManager;
 
     public:
-        Simulation(double scale) : connectionManager(), focusedID(-1), prevInActionID(-1)
+        Simulation(double scale, int windowWidth, int windowHeight) 
+            : connectionManager(), sidebar(windowWidth, windowHeight, RESOURCES_PATH), focusedID(-1), prevInActionID(-1)
         {
             this->scale = scale;
+            this->screenWidth = windowWidth;
+            this->screenHeight = windowHeight;
         }
 
         void update()
         {
+            // camera.update();
+            this->sidebar.update();
+
             for(int i = 0; i < NUM_COMPONENT_TYPE; i++)
             {
                 if(this->components[i]->get_type(this->focusedID) != ComponentType::NONE || this->focusedID == -1)
@@ -54,6 +70,10 @@ class Simulation
             {
                 this->prevInActionID = this->focusedID;
             }
+            else
+            {
+                ingfokan->set_content(nullptr);
+            }
             this->connectionManager.update(this->components, NUM_COMPONENT_TYPE, this->prevInActionID);
 
             if(requestAction.click(key_down(SPACE_KEY), 
@@ -63,32 +83,16 @@ class Simulation
             {
                 std::vector<std::pair<int,ForceType::type>> label;
                 std::vector<std::vector<double>> v = this->connectionManager.convert_joints(this->components, NUM_COMPONENT_TYPE, label);
-                // std::vector<std::vector<double>> v = {};
-                fprintf(stderr, "size: %d\n", v.size());
                 if(v.size() == 0)
                 {
                     label.clear();
-                    printf("Truss design is indeterminate!\n");  
                     return; 
                 }
-
-                
-                // printf("Calculating...\n");
-                // for(auto& i : v)
-                // {
-                //     for(auto& j : i)
-                //     {
-                //         printf("%f, ", j);
-                //     }
-                //     printf("\n");
-                // }
                 
                 std::vector<double> forces;
                 NMatrix nmatrix = NMatrix(v);
                 if(!solve_linear_equations(nmatrix, forces))
-                {
-                    printf("Truss design is indeterminate!\n");
-                }
+                {}
 
                 for(int i = 0; i < label.size(); i++)
                 {
@@ -102,49 +106,10 @@ class Simulation
                         this->components[j]->set_forces(id, { ForceType::value {forces[i], label[i].second} });
                     }
                 }
-                // printf("forces: ");
-                // for(auto& i : forces)
-                // {
-                //     printf("%f, ", i);
-                // }
-                // printf("\n");
-                // printf("label: ");
-                // for(auto& [id, forceType] : label)
-                // {
-                //     printf("%d -- %d, ", id, forceType);
-                // }
-                // printf("\n");
             }
+            textboxManager.clear();
+            checkbox_works.clear();
         }
-
-        // void calculate()
-        // {
-            // const JointList& joints = this->connectionManager.read_joints();
-            
-            // int unknownVariablesTotal = 0;
-            // std::set<int> temp;
-            // for(auto& [_, joint] : joints)
-            // {
-            //     for(auto& connection : joint)
-            //     {
-            //         for(auto)
-            //     }
-            // }
-            // unknownVariablesTotal = temp.size();
-
-            // printf("uv: %d, j: %d\n", unknownVariablesTotal, joints.size());
-            // if(unknownVariablesTotal < 2*joints.size())
-            // {
-            //     printf("Truss design is not in equilibrium state!\n");
-            //     return;
-            // }
-            // if(unknownVariablesTotal > 2*joints.size())
-            // {
-            //     printf("Truss design is indeterminate!\n");
-            //     return;
-            // }
-            // printf("Calculating...\n");
-        // }
 
         void IO()
         {
@@ -185,6 +150,7 @@ class Simulation
             {
                 this->components[i]->draw(this->scale);
             }
+            sidebar.draw();
         }
 };
 

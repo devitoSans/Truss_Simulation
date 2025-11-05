@@ -131,8 +131,7 @@ class MultiSupportController : public ComponentController
 
         void clear_forces()
         {
-            if(requestAction.is_in_action(-1, ActionType::NONE) || 
-               requestAction.is_in_action(ActionType::CALCULATE_FORCE, ActionType::CALCULATE_FORCE))
+            if(CLEAR_FORCES_NON_TRIGGER())
             {
                 return;
             }
@@ -295,6 +294,11 @@ class MultiSupportController : public ComponentController
             this->set_focused_member_id(ComponentType::SUPPORT);
             this->clear_focused_member(ComponentType::SUPPORT);
             this->clear_forces();
+            if(this->inActionID != -1)
+            {
+                supportContent.set_support_data(this->supports.at(this->focusedID));
+                supportContent.update();
+            }
             return this->focusedID;
         }
 

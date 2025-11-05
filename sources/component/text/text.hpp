@@ -4,6 +4,15 @@
 #include <string>
 #include <splashkit.h>
 
+inline std::string format_double(double value, int decimalPlaces)
+{
+    std::string text = std::to_string(value);
+    char buf[text.size()];
+    std::string format = "%."+std::to_string(decimalPlaces)+"f";
+    std::snprintf(buf, sizeof(buf), format.c_str(), value);
+    return buf;
+}
+
 inline void drawInfo(std::string resourcesPath, 
                      double value, 
                      std::string unit, 
@@ -16,12 +25,8 @@ inline void drawInfo(std::string resourcesPath,
     font fnt = load_font("VarelaRound", resourcesPath + "fonts/VarelaRound-Regular.ttf");
     set_font_style(fnt, NORMAL_FONT);
 
-    std::string text = std::to_string(value);
-
     // Format the text
-    char buf[text.size()];
-    std::snprintf(buf, sizeof(buf), "%.3f", value);
-    std::string formattedText = label + buf + unit;   
+    std::string formattedText = label + format_double(value, 3) + unit;   
 
     // Get the text's width and height
     double width = text_width(formattedText, fnt, fontSize);

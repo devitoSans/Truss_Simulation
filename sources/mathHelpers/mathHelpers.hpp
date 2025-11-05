@@ -8,6 +8,7 @@
 #define TO_RAD(X) (PI/180 * X)
 #define MAX_ID 2147483630
 #define ANGLE(degree) std::fmod(degree+360, 360.0)
+#define NEW_ID mh_random(0, MAX_ID)
 
 // Got this from my old competitive programming template
 inline long long mh_random(long long __mn__, long long __mx__) 

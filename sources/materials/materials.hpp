@@ -1,59 +1,49 @@
 #ifndef __MATERIALS__
 #define __MATERIALS__
 
-// TODO: Might need to do something on this. Since this whole thing is a constant
+#include <string>
+#include <vector>
 
 class Materials
 {
-    public: // C++ default's scope is private
-        // required for deleting in polymorphism
-        virtual ~Materials() = default; 
-        Materials& operator=(const Materials&) = default;
-        Materials(const Materials&) = default;
-
-        Materials() = default;
-
-        virtual Materials* clone() const = 0;
-
-        virtual double get_tensile_strength() const = 0;
-        virtual double get_young_modulus() const = 0;
-        virtual double get_compressive_strength() const = 0;
-};
-
-class Acrylic : public Materials
-{
     private:
-        double ts;
-        double E;
-        double cs;
+        double ts; // MPa
+        double E; // MPa
+        double cs; // MPa
+        std::string name;
 
     public:
-        Acrylic()
-        {
-            this->ts = 66; // Limit for tension force (UTS) (MPa)
-            this->E = 3600; // Young's Modulus (MPa)
-            this->cs = 98.2; // Limit for compression force (MPa)
-        }
+        Materials(double tensileStrength, double youngModulus, double compressionStrength, std::string name)
+            : ts(tensileStrength), E(youngModulus), cs(compressionStrength), name(name)
+        {}
 
-        Acrylic* clone() const override
-        {
-            return new Acrylic(*this);
-        }
-
-        double get_tensile_strength() const override
+        double get_tensile_strength() const
         {
             return this->ts;
         }
 
-        double get_young_modulus() const override
+        double get_young_modulus() const
         {
             return this->E;
         }
 
-        double get_compressive_strength() const override
+        double get_compressive_strength() const
         {
             return this->cs;
         }
+
+        const std::string& get_name() const
+        {
+            return this->name;
+        }
+};
+
+inline Materials acrylic = Materials(66, 3600, 98.2, "Acrylic");
+inline Materials pla45 = Materials(38, 2200, 38, "PLA 45° infill");
+
+inline std::vector<Materials*> materialsOption = {
+    &acrylic,
+    &pla45
 };
 
 #endif // __MATERIALS__

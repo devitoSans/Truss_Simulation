@@ -71,7 +71,7 @@ class MultiMemberController : public ComponentController
         {
             if(requestAction.click(MEMBER_CREATE_INPUT(), ActionType::MEMBER_CREATE, ActionType::MEMBER_CREATE))
             {
-                MemberModel tempModel = MemberModel(20.0, 5.0, cs_type::RECTANGLE_WITH_CIRCLE_OUT, new Acrylic(), this->resourcesPath);
+                MemberModel tempModel = MemberModel(20.0, 5.0, cs_type::RECTANGLE_WITH_CIRCLE_OUT, &acrylic, this->resourcesPath);
                 this->inActionID = tempModel.get_properties().get_id();
 
                 tempModel.modify_mid_pos(mouse_position().x, mouse_position().y);
@@ -171,8 +171,7 @@ class MultiMemberController : public ComponentController
 
         void clear_forces()
         {
-            if(requestAction.is_in_action(-1, ActionType::NONE) || 
-               requestAction.is_in_action(ActionType::CALCULATE_FORCE, ActionType::CALCULATE_FORCE))
+            if(CLEAR_FORCES_NON_TRIGGER())
             {
                 return;
             }
@@ -318,6 +317,11 @@ class MultiMemberController : public ComponentController
             this->set_focused_member_id(ComponentType::MEMBER);
             this->clear_focused_member(ComponentType::MEMBER);
             this->clear_forces();
+            if(this->inActionID != -1)
+            {
+                memberContent.set_member_data(&this->members.at(this->focusedID));
+                memberContent.update();
+            }
             return this->focusedID;
         }
         

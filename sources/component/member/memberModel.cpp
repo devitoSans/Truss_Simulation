@@ -1,4 +1,5 @@
 #include "memberModel.hpp"
+#include "../../sidebar/sidebar.hpp"
 
 // MEMBER DATA
 
@@ -30,7 +31,7 @@ MemberData::MemberData(const MemberData& obj)
 
     this->length = obj.length;
     this->crossSection = obj.crossSection->clone();
-    this->material = obj.material->clone();
+    this->material = obj.material;
 
     this->axialForce = obj.axialForce;
 }
@@ -44,7 +45,6 @@ MemberData& MemberData::operator=(MemberData obj)
 MemberData::~MemberData()
 {
     delete this->crossSection;
-    delete this->material;
 }
 
 void MemberData::swap(MemberData& obj1, MemberData& obj2)
@@ -68,7 +68,7 @@ double MemberData::get_length() const
     return this->length;
 }
 
-const CrossSection* MemberData::get_cross_section() const
+const CrossSection* MemberData::read_cross_section() const
 {
     return this->crossSection;
 }
@@ -78,7 +78,7 @@ CrossSection* MemberData::cross_section()
     return this->crossSection;
 }
 
-const Materials* MemberData::get_material() const
+Materials* MemberData::get_material()
 {
     return this->material;
 }
@@ -86,6 +86,18 @@ const Materials* MemberData::get_material() const
 double MemberData::get_axial_force() const
 {
     return this->axialForce;
+}
+
+void MemberData::set_cross_section(CrossSection* crossSection)
+{
+    delete this->crossSection;
+    this->crossSection = crossSection;
+}
+
+
+void MemberData::set_material(Materials* material)
+{
+    this->material = material;
 }
 
 bool MemberData::set_length(double newLength)
@@ -105,7 +117,7 @@ void MemberData::set_axial_force(double axialForce)
     this->axialForce = axialForce;
 }
 
-bool MemberData::is_yielded()
+bool MemberData::is_yielded() const
 {
     double maxForce = this->crossSection->get_area();
     if(this->axialForce > 0)
@@ -119,7 +131,7 @@ bool MemberData::is_yielded()
     return maxForce < abs(this->axialForce);
 }
 
-bool MemberData::is_buckled()
+bool MemberData::is_buckled() const
 {
     if(this->axialForce < 0)
     {
@@ -181,6 +193,10 @@ MemberModel::MemberModel(double length, double scale, cs_type::cross_section_typ
     this->set_angle(0);
     this->modify_length(length);
     this->resourcesPath = resourcesPath;
+
+    this->showLengthInfo = true;
+    this->showAngleInfo = true;
+    this->showCounterAngleInfo = true;
 }
 
 // In a screen orientation, up is negative and down is positive.
@@ -206,7 +222,6 @@ vector_2d MemberModel::get_start_pos() const
 
 vector_2d MemberModel::get_mid_pos() const
 {
-    // printf("JUST UFCKY OU: %f", this->midPos.x);
     return this->midPos;
 }
 
@@ -232,7 +247,7 @@ int MemberModel::get_id() const
 
 double MemberModel::get_scaled_girth() const
 {
-    return this->properties.get_cross_section()->get_girth() * this->get_scale();
+    return this->properties.read_cross_section()->get_girth() * this->get_scale();
 }
 
 void MemberModel::set_scale(double newScale)
@@ -356,7 +371,7 @@ bool MemberModel::is_intersect_start(double x, double y) const
 {
     point_2d point = { x, y };
 
-    double scaledGirth = this->properties.get_cross_section()->get_girth() * this->scale;
+    double scaledGirth = this->properties.read_cross_section()->get_girth() * this->scale;
     double radius = scaledGirth / 2;
     circle startCircle = { this->startPos.x, this->startPos.y, radius };
 
@@ -368,7 +383,7 @@ bool MemberModel::is_intersect_end(double x, double y) const
 {
     point_2d point = { x, y };
 
-    double scaledGirth = this->properties.get_cross_section()->get_girth() * this->scale;
+    double scaledGirth = this->properties.read_cross_section()->get_girth() * this->scale;
     double radius = scaledGirth / 2;
     circle endCircle = { this->endPos.x, this->endPos.y, radius };
 
@@ -378,7 +393,7 @@ bool MemberModel::is_intersect_end(double x, double y) const
 // detect circle on start
 bool MemberModel::is_intersect_start(double x, double y, double radius) const
 {
-    double scaledGirth = this->properties.get_cross_section()->get_girth() * this->scale;
+    double scaledGirth = this->properties.read_cross_section()->get_girth() * this->scale;
     return circles_intersect(
         x, y,
         radius,
@@ -391,7 +406,7 @@ bool MemberModel::is_intersect_start(double x, double y, double radius) const
 // detect circle on end
 bool MemberModel::is_intersect_end(double x, double y, double radius) const
 {
-    double scaledGirth = this->properties.get_cross_section()->get_girth() * this->scale;
+    double scaledGirth = this->properties.read_cross_section()->get_girth() * this->scale;
     return circles_intersect(
         x, y,
         radius,
@@ -405,7 +420,7 @@ bool MemberModel::is_intersect_end(double x, double y, double radius) const
 bool MemberModel::is_intersect_body(double x, double y) const
 {
     // TODO: might need to somehow rewrite this to speed it up. i.e. save this on some variables or something
-    double scaledGirth = this->properties.get_cross_section()->get_girth() * this->scale;
+    double scaledGirth = this->properties.read_cross_section()->get_girth() * this->scale;
     vector_2d line = vector_subtract(this->endPos, this->startPos);
     vector_2d direction = { line.x / this->scaledLength, line.y / this->scaledLength };
 
@@ -429,9 +444,27 @@ bool MemberModel::is_intersect_body(double x, double y) const
 
 void MemberModel::draw(bool showInfo, color memberColor) const
 {
-    if(this->read_properties().get_axial_force() != 0)
+    if(strengthPage->get_do_check())
     {
-        memberColor = color_red();
+        bool isYield = this->read_properties().is_yielded(); 
+        bool isBuckled = this->read_properties().is_buckled();
+        memberColor = COLOR_GREEN;
+        if(isYield)
+        {
+            memberColor = COLOR_RED;
+        }
+        if(isBuckled)
+        {
+            memberColor = COLOR_BLUE;
+        }
+        if(isYield && isBuckled)
+        {
+            memberColor = COLOR_PURPLE;
+        }
+    }
+    else if(this->read_properties().get_axial_force() != 0)
+    {
+        memberColor = COLOR_RED;
     }
     else if(showInfo)
     {
@@ -481,34 +514,39 @@ void MemberModel::draw(bool showInfo, color memberColor) const
     }
     else if(showInfo)
     {
-        // Start's circle
-        fill_circle(color_blue(), this->startPos.x, this->startPos.y, scaledGirth / 2);
-
-        // End's circle
-        fill_circle(color_green(), this->endPos.x, this->endPos.y, scaledGirth / 2);
-
-        drawInfo(this->resourcesPath,
-                ANGLE(-this->get_angle()), 
-                "°", 
-                color_blue(), 
-                this->get_start_pos().x, 
-                this->get_start_pos().y,
-                this->get_scaled_girth()/2);
-
-        drawInfo(this->resourcesPath,
-                ANGLE(-this->get_counter_angle()), 
-                "°", 
-                color_green(), 
-                this->get_end_pos().x, 
-                this->get_end_pos().y,
-                this->get_scaled_girth()/2);
-
-        drawInfo(this->resourcesPath,
-                this->read_properties().get_length(), 
-                " mm", 
-                memberColor, 
-                this->get_mid_pos().x, 
-                this->get_mid_pos().y,
-                this->get_scaled_girth()/2);
+        if(this->showAngleInfo)
+        {
+            // Start's circle
+            fill_circle(color_blue(), this->startPos.x, this->startPos.y, scaledGirth / 2);
+            drawInfo(this->resourcesPath,
+                    ANGLE(-this->get_angle()), 
+                    "°", 
+                    color_blue(), 
+                    this->get_start_pos().x, 
+                    this->get_start_pos().y,
+                    this->get_scaled_girth()/2);
+        }
+        if(this->showCounterAngleInfo)
+        {
+            // End's circle
+            fill_circle(color_green(), this->endPos.x, this->endPos.y, scaledGirth / 2);
+            drawInfo(this->resourcesPath,
+                    ANGLE(-this->get_counter_angle()), 
+                    "°", 
+                    color_green(), 
+                    this->get_end_pos().x, 
+                    this->get_end_pos().y,
+                    this->get_scaled_girth()/2);
+        }
+        if(this->showLengthInfo)
+        {
+            drawInfo(this->resourcesPath,
+                    this->read_properties().get_length(), 
+                    " mm", 
+                    memberColor, 
+                    this->get_mid_pos().x, 
+                    this->get_mid_pos().y,
+                    this->get_scaled_girth()/2);
+        }
     }
 }

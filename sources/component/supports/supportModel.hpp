@@ -5,6 +5,7 @@
 #include "../../mathHelpers/mathHelpers.hpp"
 #include "../shapeBase.hpp"
 #include "../text/text.hpp"
+#include "../../sidebar/sidebar.hpp"
 
 inline const double DEFAULT_PIN_GIRTH = 4.0;
 
@@ -40,8 +41,10 @@ class SupportModel
         virtual vector_2d get_mid_pos() const = 0;
         virtual double get_angle() const = 0;
         virtual double get_scaled_girth() const = 0;
+        virtual bool get_show_info() const =0;
 
         virtual void set_scale(double newScale) = 0;
+        virtual void set_show_info(bool info) = 0;
 
         virtual void move(double x, double y) = 0;
         virtual void rotate(double degree) = 0;
@@ -52,6 +55,48 @@ class SupportModel
         virtual void draw(bool showInfo = false, color memberColor = color_black()) = 0;
 };
 
+class SupportContent : public InfoContent
+{
+    private:
+        SupportModel* data; 
+
+    public:
+        SupportContent() : data(nullptr) {}
+
+        void set_support_data(SupportModel* data)
+        {
+            this->data = data;
+        }
+
+        void update()
+        {
+            if(this->data == nullptr) ingfokan->set_content(nullptr);
+            else ingfokan->set_content(this);
+        }
+
+        void draw() override
+        {
+            if(data == nullptr) return;
+
+            label_element("");
+            label_element("Component Type: Support");
+            label_element("");
+
+            // Angle
+            double newAngle = ANGLE(-this->data->get_angle());
+            if(this->draw_properties("Angle", newAngle, newAngle, 1))
+            {
+                this->data->rotate(ANGLE(-newAngle));
+            }
+            bool showAngle = this->data->get_show_info();
+            this->show_properties("Show angle?", showAngle, showAngle);
+            this->data->set_show_info(showAngle);
+            label_element("");
+        }
+};
+inline SupportContent supportContent = SupportContent();
+
+
 class PinBaseModel : public SupportModel
 {
     protected:
@@ -59,6 +104,7 @@ class PinBaseModel : public SupportModel
         SupportData properties;
         OneSideShapeBase baseShape;
         std::string resourcesPath;
+        bool showAngleInfo;
     
     public:
         PinBaseModel(double initScale, double height, double girth, bool hasVerticalReaction, bool hasHorizontalReaction, std::string resourcesPath)
@@ -67,6 +113,7 @@ class PinBaseModel : public SupportModel
         {
             this->id = mh_random(0,MAX_ID);
             this->resourcesPath = resourcesPath;
+            this->showAngleInfo = true;
         }
 
         virtual SupportModel* clone() const = 0;
@@ -124,9 +171,18 @@ class PinBaseModel : public SupportModel
                               this->baseShape.get_body_axis_offset(this->get_scaled_girth()/2, -90));
         }
 
+        bool get_show_info() const override
+        {
+            return this->showAngleInfo;
+        }
+
         void set_scale(double newScale) override
         {
             this->baseShape.set_scale(newScale);
+        }
+        void set_show_info(bool info) override
+        {
+            this->showAngleInfo = info;
         }
 
         void move(double x, double y) override
@@ -160,17 +216,9 @@ class PinBaseModel : public SupportModel
 
         void draw(bool showInfo = false, color supportColor = color_black()) override
         {
-            if(this->properties.verticalForce != 0.0)
-            {
-                supportColor = color_red();
-            }
-            if(this->properties.horizontalForce != 0.0)
-            {
-                supportColor = color_red();
-            }
             bool showForce = (this->properties.verticalForce != 0.0) || this->properties.horizontalForce != 0.0;
 
-            if(showInfo && !showForce)
+            if(showInfo || showForce)
             {
                 supportColor = color_red();
             }
@@ -183,6 +231,11 @@ class PinBaseModel : public SupportModel
                                         this->get_left_pos().x, this->get_left_pos().y,
                                         this->get_right_pos().x, this->get_right_pos().y);
 
+            if(strengthPage->get_do_check())
+            {
+                return;
+            }
+
             if(this->properties.verticalForce != 0.0)
             {
                 drawInfo(this->resourcesPath, this->read_properties().verticalForce, " N", supportColor, headPos.x, headPos.y, radius, 15, "y: ");
@@ -191,7 +244,7 @@ class PinBaseModel : public SupportModel
             {
                 drawInfo(this->resourcesPath, this->read_properties().horizontalForce, " N", supportColor, this->get_left_pos().x, this->get_left_pos().y, radius, 15, "x: ");
             }
-            if(showInfo && !showForce)
+            if((showInfo && this->showAngleInfo) && !showForce)
             {
                 drawInfo(this->resourcesPath, ANGLE(-this->get_angle()), "°", supportColor, headPos.x, headPos.y, radius);
             }

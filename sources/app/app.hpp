@@ -33,10 +33,11 @@ class App
         bool quit;
         double windowHeight;
         double windowWidth;
+        Simulation simulation;
 
     public: 
         App(std::string title="Truss Simulation", int width=640, int height=480, bool isFullScreen=false);
-        void run(Simulation& simulation);
+        void run();
         bool isQuit();
         window getWindow();
 };

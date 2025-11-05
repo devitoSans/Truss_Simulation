@@ -193,7 +193,7 @@ class ConnectionManager
                             // Therefore, system is indeteriminant.
                             if(currentCol >= numOfEquation) 
                             {
-                                fprintf(stderr, "tests\n");
+                                // fprintf(stderr, "tests\n");
                                 return {}; 
                             }
 

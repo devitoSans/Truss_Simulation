@@ -5,6 +5,7 @@
 #include "../shapeBase.hpp"
 #include "../../mathHelpers/mathHelpers.hpp"
 #include "../text/text.hpp"
+#include "../../sidebar/sidebar.hpp"
 
 inline const double FORCE_WIDTH = 4;
 inline const double FORCE_LENGTH = 20;
@@ -30,8 +31,12 @@ class ForceModel
         }
 
     public:
+        bool showForceInfo;
+        bool showAngleInfo;
+
         ForceModel(double initScale=5.0, std::string resourcesPath="")
-            : baseShape(initScale, {0.0, 0.0}, FORCE_WIDTH, FORCE_LENGTH, {0.0, -1.0})
+            : baseShape(initScale, {0.0, 0.0}, FORCE_WIDTH, FORCE_LENGTH, {0.0, -1.0}),
+              showForceInfo(true), showAngleInfo(true)
         {
             this->force = 1;
             this->id = mh_random(0, MAX_ID);
@@ -222,37 +227,95 @@ class ForceModel
 
             if(asdf)
             {
-                vector_2d dir = this->baseShape.get_body_axis_offset(this->baseShape.get_scaled_width()/2, 180);
-                dir = vector_add(dir, this->baseShape.get_feet_pos());
-                drawInfo(this->resourcesPath, 
-                         this->force, 
-                         " N", 
-                         forceColor, 
-                         dir.x, 
-                         dir.y, 
-                         this->baseShape.get_scaled_width()/2);
+                if(this->showForceInfo)
+                {
+                    vector_2d dir = this->baseShape.get_body_axis_offset(this->baseShape.get_scaled_width()/2, 180);
+                    dir = vector_add(dir, this->baseShape.get_feet_pos());
+                    drawInfo(this->resourcesPath, 
+                             this->force, 
+                             " N", 
+                             forceColor, 
+                             dir.x, 
+                             dir.y, 
+                             this->baseShape.get_scaled_width()/2);
+                }
             }
             else if(showInfo)
             {
-                drawInfo(this->resourcesPath, 
-                         this->force, 
-                         " N", 
-                         forceColor, 
-                         this->baseShape.get_head_pos().x, 
-                         this->baseShape.get_head_pos().y, 
-                         this->baseShape.get_scaled_width()/2);
+                if(this->showForceInfo)
+                {
+                    drawInfo(this->resourcesPath, 
+                            this->force, 
+                            " N", 
+                            forceColor, 
+                            this->baseShape.get_head_pos().x, 
+                            this->baseShape.get_head_pos().y, 
+                            this->baseShape.get_scaled_width()/2);
+                }
 
-                vector_2d dir = this->baseShape.get_body_axis_offset(this->baseShape.get_scaled_width()/2, 180);
-                dir = vector_add(dir, this->baseShape.get_feet_pos());
-                drawInfo(this->resourcesPath, 
-                         ANGLE(-this->get_angle()), 
-                         "°", 
-                         forceColor, 
-                         dir.x, 
-                         dir.y, 
-                         this->baseShape.get_scaled_width()/2);
+                if(this->showAngleInfo)
+                {
+                    vector_2d dir = this->baseShape.get_body_axis_offset(this->baseShape.get_scaled_width()/2, 180);
+                    dir = vector_add(dir, this->baseShape.get_feet_pos());
+                    drawInfo(this->resourcesPath, 
+                             ANGLE(-this->get_angle()), 
+                             "°", 
+                             forceColor, 
+                             dir.x, 
+                             dir.y, 
+                             this->baseShape.get_scaled_width()/2);
+                }
             }
         }
 };
+
+class ForceContent : public InfoContent
+{
+    private:
+        ForceModel* data; 
+
+    public:
+        ForceContent() : data(nullptr) {}
+
+        void set_force_data(ForceModel* data)
+        {
+            this->data = data;
+        }
+
+        void update()
+        {
+            if(this->data == nullptr) ingfokan->set_content(nullptr);
+            else ingfokan->set_content(this);
+        }
+
+        void draw() override
+        {
+            if(data == nullptr) return;
+
+            label_element("");
+            label_element("Component Type: Force");
+            label_element("");
+
+            // Force
+            double newForce = this->data->get_force();
+            if(this->draw_properties("Force", newForce, newForce, 1))
+            {
+                this->data->set_force(newForce);
+            }
+            bool& showForce = this->data->showForceInfo;
+            this->show_properties("Show force?", showForce, showForce);
+
+            // Angle
+            double newAngle = ANGLE(-this->data->get_angle());
+            if(this->draw_properties("Angle", newAngle, newAngle, 2))
+            {
+                this->data->rotate(ANGLE(-newAngle));
+            }
+            bool& showAngle = this->data->showAngleInfo;
+            this->show_properties("Show angle?", showAngle, showAngle);
+            label_element("");
+        }
+};
+inline ForceContent forceContent = ForceContent();
 
 #endif

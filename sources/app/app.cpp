@@ -2,6 +2,7 @@
 // #include "userInput.hpp"
 
 App::App(std::string title, int width, int height, bool isFullScreen)
+    : simulation(5.0, width, height)
 {
     this->appWindow = open_window(title, width, height);
     if(isFullScreen)
@@ -14,16 +15,16 @@ App::App(std::string title, int width, int height, bool isFullScreen)
     this->quit = false;
 }
 
-void App::run(Simulation& simulation)
+void App::run()
 {
     set_current_window(this->appWindow);
 
     process_events();
-    simulation.IO();
-    simulation.update();
+    this->simulation.IO();
+    this->simulation.update();
 
     clear_screen(color_white());
-    simulation.draw();
+    this->simulation.draw();
 
     draw_interface();
     refresh_screen(60);

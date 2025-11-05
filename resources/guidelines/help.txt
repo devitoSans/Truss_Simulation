@@ -1,0 +1,12 @@
+M : create a member
+R : create a roller
+P : create a pin
+F : create a push force
+SPACE : calculate members' axial force
+SHIFT + DRAG : rotate a component (member, force, etc)
+
+Important Note:
+
+1. All members default axial force is zero.
+2. Only non-zero member are showed for its axial force.
+3. nan means the truss is not determinant.

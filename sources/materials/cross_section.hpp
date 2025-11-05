@@ -5,6 +5,7 @@
 #include <stdexcept>
 #include <string>
 #include <splashkit.h>
+#include <vector>
 #include "../mathHelpers/mathHelpers.hpp"
 
 namespace cs_type
@@ -35,11 +36,16 @@ class CrossSection
         // Get I_minimum, that is Ixx if it is smaller than Iyy or vice versa.
         virtual double get_I() = 0;
 
-        // scale will define how long/short 1 mm is on the screen.
-        // mid_x and mid_y will located at the centre of the cross section.
-        virtual void draw(double mid_x, double mid_y, double scale) = 0;
-
         virtual cs_type::cross_section_type get_type() const = 0;
+
+        virtual std::string get_name() const = 0;
+
+        virtual void change_property(const std::string& name_property, double value) = 0;
+
+        virtual std::vector<std::string> get_properties_name() const = 0;
+        virtual std::vector<double> get_properties_values() const = 0;
+
+        virtual void draw(const std::string& resourcesPath) const = 0;
 };
 
 class RectangleWithCircleCut : public CrossSection
@@ -129,29 +135,59 @@ class RectangleWithCircleCut : public CrossSection
             return std::min(Ixx, Iyy);
         }
 
-        void draw(double mid_x, double mid_y, double scale) override
-        {
-            double scaled_width = this->width*scale;
-            double scaled_height = this->height*scale;
-            double scaled_radius = this->get_circle_cut_diameter()/2 * scale;
-
-            double x = (2*mid_x - scaled_width)/2;
-            double y = (2*mid_y - scaled_height)/2;
-
-            
-            fill_rectangle(this->section_color, x,y, scaled_width, scaled_height);
-            // double centre_x = x + scaled_width/2;
-            // double centre_y = y + scaled_height/2;
-            // fill_circle(this->background_color, centre_x,centre_y, scaled_radius);
-            fill_circle(this->background_color, mid_x,mid_y, scaled_radius);
-        }
-
         cs_type::cross_section_type get_type() const override
         {
             return cs_type::RECTANGLE_WITH_CIRCLE_OUT;
         }
+
+        std::string get_name() const override
+        {
+            return "Rectangular shape with circle cut out";
+        }
+
+        void change_property(const std::string& name_property, double value) override
+        {
+            if(name_property == "a")
+            {
+                this->set_width(value);
+            }
+            else if(name_property == "t")
+            {
+                this->set_thickness(value);
+            }
+            else if(name_property == "b")
+            {
+                this->set_height(value);
+            }
+        }
+
+        std::vector<std::string> get_properties_name() const override
+        {
+            return { "a", "b", "t" };
+        }
+
+        std::vector<double> get_properties_values() const override
+        {
+            return { this->width, this->height, this->thickness };
+        }
+
+        void draw(const std::string& resourcesPath) const override
+        {
+            start_inset("img-area", 200);
+            bitmap bmp = load_bitmap(this->get_name(), resourcesPath + "cross_section/"+this->get_name()+".png");
+            disable_interface();
+            set_layout_height(200);
+            (void)bitmap_button(bmp);
+            enable_interface();
+            end_inset("img-area");
+            set_layout_height(0);
+        }
 };
 
+inline RectangleWithCircleCut rectangleWithCircleCut = RectangleWithCircleCut();
 
+inline std::vector<CrossSection*> crossSectionOpts = {
+    &rectangleWithCircleCut
+};
 
 #endif // _CROSS_SECTION__ 

@@ -6,6 +6,7 @@
 #include "forceModel.hpp"
 #include "../componentControl.hpp"
 #include "../../action/action.hpp"
+#include "../../sidebar/sidebar.hpp"
 
 // User input for force
 
@@ -212,6 +213,11 @@ class MultiForceController : public ComponentController
 
             this->set_focused_member_id(ComponentType::FORCE);
             this->clear_focused_member(ComponentType::FORCE);
+            if(this->inActionID != -1)
+            {
+                forceContent.set_force_data(&this->forces.at(this->focusedID));
+                forceContent.update();
+            }
             return this->focusedID;
         }
 

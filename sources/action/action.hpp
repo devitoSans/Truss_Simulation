@@ -30,7 +30,12 @@ namespace ActionType
         FORCE_ROTATE,
 
         // CALCULATION
-        CALCULATE_FORCE
+        CALCULATE_FORCE,
+
+        // SIDEBAR
+        DRAG_SIDEBAR,
+        SHOW_BUTTON_INFO_SIDEBAR,
+        SIDEBAR
     };
 }
 

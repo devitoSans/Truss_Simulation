@@ -6,6 +6,14 @@
 #include "../action/action.hpp"
 #include "../definition.hpp"
 
+inline bool CLEAR_FORCES_NON_TRIGGER()
+{
+    return requestAction.is_in_action(-1, ActionType::NONE) || \
+           requestAction.is_in_action(ActionType::CALCULATE_FORCE, ActionType::CALCULATE_FORCE) || \
+           requestAction.is_in_action(ActionType::SIDEBAR, ActionType::SIDEBAR) ||
+           requestAction.is_in_action(ActionType::DRAG_SIDEBAR, ActionType::DRAG_SIDEBAR);
+} 
+
 // General user input 
 inline bool DELETE_INPUT(int id)
 {
