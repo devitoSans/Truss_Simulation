@@ -14,7 +14,7 @@
 #include "../sidebar/sidebar.hpp"
 #include <cassert>
 
-#define DEBUG_MODE true
+#define DEBUG_MODE false
 
 #define RESOURCES_PATH (DEBUG_MODE ? "../resources/" : "resources/")
 
