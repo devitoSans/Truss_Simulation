@@ -14,7 +14,9 @@
 #include "../sidebar/sidebar.hpp"
 #include <cassert>
 
-#define RESOURCES_PATH "../resources/"
+#define DEBUG_MODE true
+
+#define RESOURCES_PATH (DEBUG_MODE ? "../resources/" : "resources/")
 
 const int NUM_COMPONENT_TYPE = 3;
 
